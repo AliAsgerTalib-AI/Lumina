@@ -5,6 +5,12 @@ export interface JargonCheatSheetItem {
   simple_definition: string;
 }
 
+export interface GroundedFinding {
+  finding_statement: string;
+  source_page: number;
+  verbatim_quote: string;
+}
+
 export interface SimplifiedPaper {
   simplified_title: string;
   one_sentence_hook: string;
@@ -19,6 +25,12 @@ export interface SimplifiedPaper {
   key_findings?: string[]; // Optional legacy backing field
   real_world_impact?: string; // Optional legacy backing field
   explanation_level?: ExplanationLevel; // Option to save the processed category level
+  authors?: string;
+  year?: number;
+  publish_date?: string;
+  original_url?: string;
+  original_title?: string;
+  findings?: GroundedFinding[];
 }
 
 export interface SamplePaper {

@@ -27,7 +27,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
         <div className="flex items-center gap-3">
           <button 
             onClick={onClose}
-            className="p-2 -ml-2 rounded-xl text-[#8C8474] hover:text-[#2D2D24] hover:bg-[#F2EDE4] transition-all cursor-pointer flex items-center justify-center border border-[#E8E4D9]"
+            className="btn-secondary !p-2 -ml-2"
             title="Go Back"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -37,7 +37,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
             <h1 className="text-lg font-science font-black tracking-tight text-[#2D2D24] uppercase">
               About Lumina
             </h1>
-            <span className="text-[9px] bg-[#7C8464]/15 text-[#7C8464] border border-[#7C8464]/25 px-2 py-0.5 rounded-full font-mono uppercase font-black">
+            <span className="badge-natural">
               Corporate Dossier & Mission
             </span>
           </div>
@@ -45,7 +45,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
 
         <button 
           onClick={onClose}
-          className="p-2 rounded-xl text-[#8C8474] hover:text-[#2D2D24] border border-[#E8E4D9] bg-white shadow-3xs cursor-pointer hover:bg-[#F2EDE4] transition-all"
+          className="btn-secondary !p-2 bg-white shadow-3xs"
         >
           <X className="h-4 w-4" />
         </button>
@@ -68,7 +68,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Mission & Vision Card */}
-          <div className="bg-white border border-[#E8E4D9] p-6 sm:p-8 rounded-[32px] shadow-3xs flex flex-col gap-4">
+          <div className="card-natural flex flex-col gap-4 !p-6 sm:!p-8 !shadow-3xs">
             <div className="w-10 h-10 rounded-xl bg-[#7C8464]/10 text-[#7C8464] flex items-center justify-center">
               <Compass className="h-5 w-5" />
             </div>
@@ -79,9 +79,9 @@ export default function AboutUs({ onClose }: AboutUsProps) {
               We believe that breakthroughs happen at the boundary layers between disciplines. Lumina is built to dissolve terms-of-art barriers, mapping complex biochemical, physical, and thermodynamic concepts into unified, universally understandable computational formulations.
             </p>
           </div>
-
+ 
           {/* Technical Adaptation Card */}
-          <div className="bg-white border border-[#E8E4D9] p-6 sm:p-8 rounded-[32px] shadow-3xs flex flex-col gap-4">
+          <div className="card-natural flex flex-col gap-4 !p-6 sm:!p-8 !shadow-3xs">
             <div className="w-10 h-10 rounded-xl bg-amber-800/10 text-amber-800 flex items-center justify-center">
               <BookOpen className="h-5 w-5" />
             </div>
@@ -115,7 +115,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
         </div>
 
         {/* Contact, Team & Support Section */}
-        <div className="bg-white border border-[#E8E4D9] rounded-[32px] p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="card-natural !p-6 sm:!p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 !shadow-3xs">
           <div className="flex flex-col gap-1">
             <h3 className="font-serif font-extrabold text-[#2D2D24] text-md">
               Support & Academic Inquiry
@@ -124,11 +124,11 @@ export default function AboutUs({ onClose }: AboutUsProps) {
               Have feedback, support tickets, or want to collaborate with Lumina ? Reach out to us below.
             </p>
           </div>
-
+ 
           <div className="flex flex-col gap-1.5 sm:text-right flex-shrink-0">
             <a 
               href="mailto:aliasgertalib@gmail.com" 
-              className="px-5 py-2.5 rounded-xl bg-[#7C8464] hover:bg-[#6A7153] text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-3xs select-none active:scale-95 border border-[#6A7153]"
+              className="btn-primary !px-5"
             >
               <Mail className="h-4 w-4" />
               <span>aliasgertalib@gmail.com</span>

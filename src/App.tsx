@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import CrossDomainVariableInjector from "./components/CrossDomainVariableInjector";
-import GenerativeMathCompiler from "./components/GenerativeMathCompiler";
-import DialecticalSynthesisEngine from "./components/DialecticalSynthesisEngine";
-import RosettaCanvas from "./components/RosettaCanvas";
 import AboutUs from "./components/AboutUs";
 import SympheryIcon from "./components/SympheryIcon";
-import CrossDisciplinaryAnalogyPlayground from "./components/CrossDisciplinaryAnalogyPlayground";
+import ReviewerArena from "./components/ReviewerArena";
+import CitationHorizonGraph from "./components/CitationHorizonGraph";
+import ThesisValidationMatrix, { generateThesisValidationMatrix as generateThesisValidationMatrixImported } from "./components/ThesisValidationMatrix";
+import JargonGlossary from "./components/JargonGlossary";
+import { FusionLab } from "./components/FusionLab";
+import { SynthesisDossier } from "./components/SynthesisDossier";
 import { SimplifiedPaper, JargonCheatSheetItem, ExplanationLevel, LivePaper, Source } from "./types";
 import { 
   Sparkle, 
@@ -46,170 +47,40 @@ import {
   GitMerge,
   Plus,
   FlaskConical,
-  Atom
+  Atom,
+  ShieldAlert,
+  Sliders
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-const DECIPHERED_MATH_ENTRIES = [
-  {
-    id: "attention",
-    keywords: ["attention", "transformer", "self-attention", "llm", "nn", "neural network", "attention mechanism"],
-    mathExpression: "\\text{Attention}(Q, K, V) = \\text{soft-max}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V",
-    displayText: "Attention(Q, K, V) = soft-max( QKᵀ / √d_k ) V",
-    name: "Self-Attention Vector Dot-Product Optimization",
-    historicalOrigin: {
-      origin: "Gauss's 1809 Least Squares Matrix Reductions",
-      formula: "[\\mathbf{X}^T \\mathbf{X}]^{-1} \\mathbf{X}^T \\mathbf{y}",
-      description: "Carl Friedrich Gauss first developed matrix normal projection equations in 1809 to map asteroid orbits from sparse coordinates. He projected high-dimensional observation vectors onto a 3D orbit plane, mapping semantic fields long before Transformers."
-    },
-    missingLeaps: {
-      steps: [
-        "Dot-Product Projection: Q (query) is projected onto K (key) transposition via matrix multiplication representing alignment intensities.",
-        "Scale Normalization: We divide elements by √d_k. Since variance of a dot product of two d-dimensional vectors scales with d_k, dividing by √d_k brings statistical variance back to 1.0, protecting Soft-max from exploding into vanishing gradient regions.",
-        "Soft-max Compression: Converts dry similarity logits into a normalized attention map distribution of probability weights ranging 0 to 1.",
-        "Value Matrix Integration: Multiplies these weights against V (value) to output high-dimensional word representations."
-      ],
-      description: "Most academic publications ignore the dimensional variance bounds, omitting how √d_k explicitly guards soft-max saturation curves."
-    },
-    modernApplication: {
-      topic: "LLM Context Window Multi-Head Attention Router",
-      parameter: "score = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(d_k)\natten = torch.softmax(score, dim=-1)\noutput = torch.matmul(atten, v)",
-      description: "This constitutes the attention-head code driving models like GPT-4 and Gemini, scaling contextual weight parameters across 100K token windows."
-    }
-  },
-  {
-    id: "entropy",
-    keywords: ["entropy", "shannon", "information", "probability", "uncertainty", "cross-entropy", "biology", "genomics", "metabolic"],
-    mathExpression: "H(X) = -\\sum_{i=1}^n P(x_i) \\log_2 P(x_i)",
-    displayText: "H(X) = - ∑ P(x_i) log₂ P(x_i)",
-    name: "Shannon's Information Entropy Metric",
-    historicalOrigin: {
-      origin: "Boltzmann's 1877 Thermodynamic Phase Space Entropy",
-      formula: "S = k_B \\ln \\Omega",
-      description: "Ludwig Boltzmann defined physical entropy as the natural logarithm of microscopic states in a gas system. In 1948, Claude Shannon realized information uncertainty follows the exact same mechanical dispersion equations."
-    },
-    missingLeaps: {
-      steps: [
-        "Alternative Probability Matrix: P(x_i) tracks the probability density function of each possible discrete state.",
-        "Surprisal Quantification: The expression -log_2 P(x_i) measures the bits of surprise associated with the event (lower probability = higher surprise).",
-        "Expectation Summation: Weighted average is built by multiplying each surprise value with its probability, resulting in the average expected bits.",
-        "Asymptotic Limits: As the probability of a single state approaches 1.0, general entropy decays smoothly to 0 (perfect certainty)."
-      ],
-      description: "Textbooks rarely verify that translating negative logarithms computes the exact binary bits required to map structural variations."
-    },
-    modernApplication: {
-      topic: "Categorical Cross-Entropy Loss optimization",
-      parameter: "loss = -np.sum(target_probs * np.log2(predicted_probs + 1e-15))",
-      description: "Serves as the optimization benchmark for multiclass deep learning classifiers, driving weights forward until predictions merge with target maps."
-    }
-  },
-  {
-    id: "gradient",
-    keywords: ["gradient", "gradient descent", "optimization", "neural", "weights", "sgd", "loss", "backpropagation", "physics", "astronomy"],
-    mathExpression: "w_{t+1} = w_t - \\eta \\nabla L(w_t)",
-    displayText: "w_t+1 = w_t - η ∇ L(w_t)",
-    name: "Gradient Descent Steepest Direction Vector Update",
-    historicalOrigin: {
-      origin: "Newton's 1687 Force Gravity Deflection Planes",
-      formula: "\\vec{F}_g = -G \\frac{M m}{r^2} \\hat{r}",
-      description: "Isaac Newton designed orbital calculus of vectors traveling down gravitational trajectories. His mechanical equations established multi-dimensional systems tracking steep local vectors down energy wells."
-    },
-    missingLeaps: {
-      steps: [
-        "Partial Derivative Expansion: The vector gradient ∇L contains the individual partial derivatives of the loss function corresponding to each trainable dimension.",
-        "Polarity Inversion: Subtracting the gradient flips the vector direction 180°, facing directly down the local slope toward the global minimum.",
-        "Learning Rate (η) Decay: Constrains step size to prevent local hyperplanes from overshooting or diverging.",
-        "Parameter Shifts: Iteratively re-centers millions of neural network weight vectors relative to active loss boundaries."
-      ],
-      description: "Standard journals omit the multi-dimensional stability proofs of Taylor expansion approximations under highly non-convex functions."
-    },
-    modernApplication: {
-      topic: "Stochastic AdamW Adaptive Learning Rate Weight Optimizer",
-      parameter: "for p in model.parameters():\n    p.data = p.data - lr * (p.grad + weight_decay * p.data)",
-      description: "Foundational optimizer loop in PyTorch, executing gradient descent update parameters over billions of network parameters per step."
-    }
-  },
-  {
-    id: "schrodinger",
-    keywords: ["schrödinger", "quantum", "wave", "hamiltonian", "psi", "schrodinger", "qubit", "superconducting"],
-    mathExpression: "i\\hbar \\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi",
-    displayText: "iℏ ∂/∂t Ψ = ĤΨ",
-    name: "Schrödinger Wave Equation State Hamiltonian",
-    historicalOrigin: {
-      origin: "Hamilton's 1834 Mechanical Optic Paths",
-      formula: "H(q, p) = T(p) + V(q)",
-      description: "William Rowan Hamilton mathematically united optics and mechanics. Erwin Schrödinger substituted Hamilton’s classical kinetic variables with differential wave equations to create quantum modeling."
-    },
-    missingLeaps: {
-      steps: [
-        "Differential Transformation: Classical momenta parameters p are replaced with partial space differential operators -iℏ∇.",
-        "Hamiltonian Operation: The operation calculates kinetic energy operators and potentials operating directly onto state wavefunction Ψ.",
-        "Eigenstate Resolution: Differential eigenvalues resolve discrete energy states E matching wave boundary conditions.",
-        "Total State Integration: The integrated square wavefunction magnitude represents absolute space probability densities."
-      ],
-      description: "Omitted gaps fail to clarify how continuous wave functions collapse into discrete energy levels due strictly to bound spatial variables."
-    },
-    modernApplication: {
-      topic: "Quantum Coherence Circuit Simulator",
-      parameter: "psi_t = scipy.linalg.expm(-1j * H * t / hbar) @ psi_0",
-      description: "Calculates coherence state lifespan and fidelity in superconducting transmon qubits used in quantum hardware."
-    }
-  },
-  {
-    id: "reinforce",
-    keywords: ["reinforce", "policy gradient", "reward", "reinforcement learning", "ppo", "rlhf", "policy"],
-    mathExpression: "\\nabla_\\theta J(\\theta) = \\mathbb{E}[\\nabla_\\theta \\log \\pi_\\theta(a|s) Q(s,a)]",
-    displayText: "∇_θ J(θ) = E [ ∇_θ log π_θ(a|s) Q(s,a) ]",
-    name: "REINFORCE Policy Gradient Objective",
-    historicalOrigin: {
-      origin: "Ramanujan's 1920 Mock Theta Mock Function Inversions",
-      formula: "\\Phi(q) = \\sum \\frac{q^{n^2}}{(1-q)(1-q^2)...(1-q^n)}",
-      description: "On his deathbed, Ramanujan developed Mock Theta function series to predict boundary distribution values in modular limits. These formulas paved the way for Markov expectation paths as modern stochastic transitions."
-    },
-    missingLeaps: {
-      steps: [
-        "Expectation Breakdown: Re-writing standard trajectory objective function J(θ) as an integral of policy path probabilities.",
-        "Logarithmic Identity Shift: Utilizing ∇_θ π_θ(a|s) = π_θ(a|s) ∇_θ log π_θ(a|s) to replace the derivative of probabilities with a simple log derivative.",
-        "Stochastic expectation: Computing gradients without needing to calculate all possible states, by using the active sample rewards Q(s,a) directly.",
-        "Gradient Ascent Amplification: Actions with higher reward parameters Q(s,a) receive larger updates to scale their policy logits."
-      ],
-      description: "Journals usually skip the logarithmic derivative identity, which is crucial for transforming integrals into sample-friendly log-sum gradients."
-    },
-    modernApplication: {
-      topic: "RLHF PPO Reward Alignment Objective",
-      parameter: "ratio = torch.exp(new_log_probs - old_log_probs)\nsurrogate = advantage * ratio\nloss = -torch.mean(surrogate)",
-      description: "Responsible for aligning modern foundational LLMs like Gemini with human preference scores, regulating probability weights based on feedback loops."
-    }
+async function safeParseJson(response: Response, fallbackValue: any = null) {
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    const rawText = await response.text();
+    console.warn("Received non-JSON content-type: " + contentType, rawText.substring(0, 300));
+    throw new Error("Invalid API Response: Server did not return JSON. Please verify service integration keys or try another query.");
   }
-];
+  try {
+    const text = await response.text();
+    return JSON.parse(text);
+  } catch (err: any) {
+    console.error("JSON parsing failed, reading text:", err);
+    throw new Error("Invalid JSON structure returned by server.");
+  }
+}
 
-const getDecipheredMathForPaper = (paperTitle: string, paperAbstract: string, paperTopic?: string): any => {
-  const fullTextToSearch = `${paperTitle} ${paperAbstract} ${paperTopic || ""}`.toLowerCase();
-  for (const entry of DECIPHERED_MATH_ENTRIES) {
-    if (entry.keywords.some(kw => fullTextToSearch.includes(kw))) {
-      return entry;
-    }
-  }
-  // Default fallbacks based on topic
-  const topic = (paperTopic || "").toLowerCase();
-  if (topic.includes("quantum") || topic.includes("physics")) {
-    return DECIPHERED_MATH_ENTRIES[3]; // Schrodinger
-  }
-  if (topic.includes("biology") || topic.includes("chemistry") || topic.includes("social")) {
-    return DECIPHERED_MATH_ENTRIES[1]; // Entropy
-  }
-  return DECIPHERED_MATH_ENTRIES[0]; // Attention / ML as solid standard
-};
+
 
 export default function App() {
   // Input states
   const [title, setTitle] = useState("");
   const [abstract, setAbstract] = useState("");
   const [fullText, setFullText] = useState("");
+  const [parsedPages, setParsedPages] = useState<any[]>([]);
+  const [crawlMetadata, setCrawlMetadata] = useState<{ authors?: string; publish_date?: string; source_name?: string; original_url?: string; } | null>(null);
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null);
   const [explanationLevel, setExplanationLevel] = useState<ExplanationLevel>("High School");
   const [viewMode, setViewMode] = useState<"concept" | "detail">("concept");
-  const [activeMathId, setActiveMathId] = useState<string | null>(null);
 
   // Reading List State (using localStorage persistence)
   const [readingList, setReadingList] = useState<LivePaper[]>(() => {
@@ -226,19 +97,8 @@ export default function App() {
   const [showFusionLab, setShowFusionLab] = useState(false);
   const [fusionPaperA, setFusionPaperA] = useState<LivePaper | null>(null);
   const [fusionPaperB, setFusionPaperB] = useState<LivePaper | null>(null);
-  const [fusionLoading, setFusionLoading] = useState(false);
-  const [fusionStatusText, setFusionStatusText] = useState("");
-  const [fusionResult, setFusionResult] = useState<any | null>(null);
-  const [fusionError, setFusionError] = useState<string | null>(null);
-  const [expandedFusionSection, setExpandedFusionSection] = useState<string | null>("abstract");
-  const [fusionSearchQuery, setFusionSearchQuery] = useState("");
-  const [selectingSlot, setSelectingSlot] = useState<"A" | "B" | null>(null);
-  const [showInjector, setShowInjector] = useState(false);
-  const [showAnalogy, setShowAnalogy] = useState(false);
-  const [showMathCompiler, setShowMathCompiler] = useState(false);
-  const [showDialectical, setShowDialectical] = useState(false);
-  const [showRosetta, setShowRosetta] = useState(false);
   const [showAboutUs, setShowAboutUs] = useState(false);
+  const [showReviewChallenge, setShowReviewChallenge] = useState(false);
 
   // Sync readingList to localStorage
   useEffect(() => {
@@ -264,93 +124,6 @@ export default function App() {
 
   
 
-  // Helper to parse text and turn theoretical claims into styled inline badges
-  const renderSynthesizedTextWithBadges = (text: string) => {
-    if (!text) return null;
-    const parts = text.split("[Theoretical Proposition]");
-    if (parts.length === 1) return text;
-    
-    return parts.map((part, index) => (
-      <React.Fragment key={index}>
-        {part}
-        {index < parts.length - 1 && (
-          <span className="inline-flex items-center gap-1 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 text-[10px] sm:text-[11px] font-mono font-bold px-2 py-0.5 rounded-md uppercase mx-1.5 align-middle select-none md:my-0.5">
-            <Sparkles className="h-2.5 w-2.5" />
-            Theoretical Proposition
-          </span>
-        )}
-      </React.Fragment>
-    ));
-  };
-
-  // Run the paper synthesis backend pipeline
-  const handleSynthesize = async () => {
-    if (!fusionPaperA || !fusionPaperB) {
-      setFusionError("Please select both Paper A and Paper B to synthesize.");
-      return;
-    }
-
-    setFusionLoading(true);
-    setFusionError(null);
-    setFusionResult(null);
-
-    const statuses = [
-      "Extracting core paradigms from both documents...",
-      "Mapping intersection vectors & identifying novel research gap...",
-      "Resolving ontological divergences under chosen pathway...",
-      "Synthesizing unified theoretical methodology & math blueprint...",
-      "Formulating thermodynamic boundaries and experimental limits...",
-      "Injecting theoretical proposition badges & formatting manuscript..."
-    ];
-
-    let statusIndex = 0;
-    setFusionStatusText(statuses[0]);
-    const statusInterval = setInterval(() => {
-      if (statusIndex < statuses.length - 1) {
-        statusIndex++;
-        setFusionStatusText(statuses[statusIndex]);
-      }
-    }, 1800);
-
-    try {
-      const resp = await fetch("/api/fusion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          paperA: {
-            title: fusionPaperA.title,
-            abstract: fusionPaperA.abstract,
-            authors: fusionPaperA.authors,
-            source_name: fusionPaperA.source_name
-          },
-          paperB: {
-            title: fusionPaperB.title,
-            abstract: fusionPaperB.abstract,
-            authors: fusionPaperB.authors,
-            source_name: fusionPaperB.source_name
-          }
-        })
-      });
-
-      if (!resp.ok) {
-        const errData = await resp.json();
-        throw new Error(errData.error || "Failed to synthesize papers.");
-      }
-
-      const data = await resp.json();
-      setFusionResult(data);
-      setExpandedFusionSection("abstract");
-    } catch (err: any) {
-      console.error("Fusion error:", err);
-      setFusionError(err.message || "An unexpected error occurred during synthesis.");
-    } finally {
-      clearInterval(statusInterval);
-      setFusionLoading(false);
-    }
-  };
-  
   // Live curated papers states
   const [livePapers, setLivePapers] = useState<LivePaper[]>([]);
   const [loadingLive, setLoadingLive] = useState(false);
@@ -370,6 +143,17 @@ export default function App() {
   
   // Search query for the Jargon Cheat Sheet
   const [jargonQuery, setJargonQuery] = useState("");
+
+  // --- RESEARCH FINDING ENHANCEMENT STATES (IDEAS 1, 2, 3) ---
+  const [liveSearchQuery, setLiveSearchQuery] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState<string>("All");
+
+  const [scoutQuery, setScoutQuery] = useState("");
+  const [scouting, setScouting] = useState(false);
+  const [scoutResults, setScoutResults] = useState<LivePaper[]>([]);
+  const [scoutError, setScoutError] = useState<string | null>(null);
+
+  const [compilingDossier, setCompilingDossier] = useState(false);
 
   // Pulsing term state for connecting inline highlights to glossary cards
   const [pulsingTerm, setPulsingTerm] = useState<string | null>(null);
@@ -404,8 +188,16 @@ export default function App() {
   const [highDensity, setHighDensity] = useState(false);
 
   // Dynamically generate Thesis Validation Matrix tailored to the active paper
-  const generateThesisValidationMatrix = (paperTitle: string) => {
+  const generateThesisValidationMatrix = (paperTitle: string, paperYear?: number) => {
     const cleanTitle = paperTitle || "Current Study";
+    const activeYear = paperYear || result?.year || 2026;
+    const sup1Year = activeYear;
+    const sup2Year = Math.max(1995, activeYear - 1);
+    const con1Year = activeYear;
+    const con2Year = activeYear;
+    const met1Year = activeYear;
+    const met2Year = Math.max(1995, activeYear - 1);
+
     let domain = "AI and ML Foundations";
     if (cleanTitle.toLowerCase().includes("biolog") || cleanTitle.toLowerCase().includes("genet") || cleanTitle.toLowerCase().includes("protein") || cleanTitle.toLowerCase().includes("nutrient") || cleanTitle.toLowerCase().includes("crop")) {
       domain = "Bioinformatics & Genetics";
@@ -420,7 +212,7 @@ export default function App() {
         {
           id: "sup-1",
           journal: "Journal of Computational Design Methods",
-          authors: "Chen & Zhang, 2026",
+          authors: `Chen & Zhang, ${sup1Year}`,
           citations: 184,
           claim: domain === "Bioinformatics & Genetics"
             ? "Biological topologies are bound to structured optimization curves under scale."
@@ -437,14 +229,14 @@ export default function App() {
             ? "💚 Verification: Confirmed state retention stays within 0.4% error bounds, replicating the main paper's claim of universal preservation."
             : "💚 Verification: Replicated identical learning curves under high parameters, proving model stability claims in section 1 of the study.",
           anchorId: "claim-big-idea",
-          originalUrl: "https://arxiv.org/abs/2604.01124",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological topologies scale structured optimization scale" : domain === "Environmental Sciences" ? "soil organic carbon decay coefficients monitoring" : domain === "Quantum Mechanics & Physics" ? "quantum register information retention mathematical models 10mK" : "dynamic feedback scaling gradient descent curves stable"),
           abstract: "This work investigates computational stability models across simulated domains, validating the linear scaling dynamics and energy conservation parameters under peak stress loads.",
           summary: "An independent replication study that confirms the core assertions with negligible error bounds."
         },
         {
           id: "sup-2",
           journal: "Global Science Publications & Archives",
-          authors: "S. Martinez, et al., 2025",
+          authors: `S. Martinez, et al., ${sup2Year}`,
           citations: 92,
           claim: domain === "Bioinformatics & Genetics"
             ? "Microsecond mitochondrial structural sequences show distinct clustering behaviors."
@@ -461,7 +253,7 @@ export default function App() {
             ? "💚 Verification: Verified optimization metrics converge to stable regimes, backing up the core math presented in discoveries."
             : "💚 Support: Direct hardware validation verifies that latency spikes are countered by lateral routing, yielding consistent 85%+ throughput.",
           anchorId: "claim-discovery-0",
-          originalUrl: "https://arxiv.org/abs/2511.08291",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "mitochondrial structural sequences clustering" : domain === "Environmental Sciences" ? "deep learning predict methane pathways respiration" : domain === "Quantum Mechanics & Physics" ? "gradient descent optimization spatial quantum filters" : "feedback latency lateral gradient offsets throughput"),
           abstract: "We implement dynamic scaling on dedicated servers and discover that localized feedback pathways offset connection overhead substantially.",
           summary: "Verifies the findings under live hardware conditions, presenting empirical metrics supporting the main paper's claims."
         }
@@ -470,7 +262,7 @@ export default function App() {
         {
           id: "con-1",
           journal: "Advanced Computational Review",
-          authors: "L. Zhao & J. Sterling, 2026",
+          authors: `L. Zhao & J. Sterling, ${con1Year}`,
           citations: 114,
           claim: domain === "Bioinformatics & Genetics"
             ? "Biological topologies collapse into volatile regimes when parameters scale non-linearly."
@@ -487,14 +279,14 @@ export default function App() {
             ? "⚠️ Spike: Found state decoherence rate spiked by 24% under ambient field deviations, disputing the study's claims of universal noise immunity."
             : "⚠️ Friction: The active error rate spiked by 14% when tested against non-linear delayed opponents, contradicting claims of universal stabilization.",
           anchorId: "claim-discovery-1",
-          originalUrl: "https://arxiv.org/abs/2602.04812",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological topologies collapse non-linear parameters" : domain === "Environmental Sciences" ? "organic carbon sequestration temperature anomalies" : domain === "Quantum Mechanics & Physics" ? "multi-gate quantum coherence electric noise fields" : "delayed gradient feedback gradient explosion"),
           abstract: "An exploration of degradation boundaries under extreme volatile conditions. We find that feedback loops cause structural divergence when input bounds surpass nominal standards.",
           summary: "Identifies severe operational boundaries and disputes the universal stability of the primary study's model."
         },
         {
           id: "con-2",
           journal: "The Dialectical Science Gazette",
-          authors: "K. Vance, 2026",
+          authors: `K. Vance, ${con2Year}`,
           citations: 56,
           claim: domain === "Bioinformatics & Genetics"
             ? "Biological sequencing approaches struggle to map long sequences containing recursive patterns."
@@ -511,7 +303,7 @@ export default function App() {
             ? "⚠️ Friction: Demonstrates interconnect bottlenecks that offset alignment speedups, contradicting theoretical multi-gate performance stats."
             : "⚠️ Critique: Challenges the theoretical modeling of feedback layers, noting communication bottlenecks during distributed scale-up operations.",
           anchorId: "claim-discovery-2",
-          originalUrl: "https://arxiv.org/abs/2601.09241",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological sequencing map recursive patterns" : domain === "Environmental Sciences" ? "soil carbon respiration natural variance" : domain === "Quantum Mechanics & Physics" ? "quantum signal updates communications latency overhead" : "hardware interconnect latency simulation speedups bottlenecks"),
           abstract: "We benchmark distributed layer coordination across real physical server racks, identifying critical spatial communication bottlenecks.",
           summary: "A hardware-centric critique highlighting that idealized simulations overlook tangible latency boundaries."
         }
@@ -520,7 +312,7 @@ export default function App() {
         {
           id: "met-1",
           journal: "Journal of Theoretical Physics & Modeling",
-          authors: "Feynman Group Research, 2026",
+          authors: `Feynman Group Research, ${met1Year}`,
           citations: 210,
           claim: domain === "Bioinformatics & Genetics"
             ? "Simulating cell membrane topologies using stochastic Monte Carlo algorithms."
@@ -535,14 +327,14 @@ export default function App() {
             ? "🌐 Variation: Relied on weather grids instead of Neural Estimations. Sequestration readings stayed within 1.2% of the main paper's output."
             : "🌐 Variation: Substituted backpropagation with simulated annealing. While memory overhead dropped 30%, resolution margins stayed within 1% of this study.",
           anchorId: "claim-big-idea",
-          originalUrl: "https://arxiv.org/abs/2603.01192",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "cell membrane topologies stochastic Monte Carlo algorithm" : domain === "Environmental Sciences" ? "crop carbon exchange stochastic localized weather grids" : domain === "Quantum Mechanics & Physics" ? "simulating multi-gate quantum pathways parallel stochastic Monte Carlo" : "gradient descent stochastic simulated annealing"),
           abstract: "This paper introduces alternative algorithmic paths to model high-dimensional parameters, showing that localized search regions deliver comparable fidelity metrics for standard domains.",
           summary: "Confirms the primary study's model conclusions using an entirely independent mathematical methodology."
         },
         {
           id: "met-2",
           journal: "Bio-Computing Benchmarks",
-          authors: "Okada & Sato, 2025",
+          authors: `Okada & Sato, ${met2Year}`,
           citations: 67,
           claim: domain === "Bioinformatics & Genetics"
             ? "Comparing protein structures in dry lab conditions on customizable TPU hardware."
@@ -557,135 +349,13 @@ export default function App() {
             ? "🌐 Variation: Tested findings inside physical climate chambers. Empirical results match the algorithmic prediction model with high fidelity."
             : "🌐 Variation: Evaluated hardware in cryo-chambers, confirming mathematical retention stability parameters under extreme cooling limits.",
           anchorId: "claim-discovery-0",
-          originalUrl: "https://arxiv.org/abs/2508.10234",
+          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "protein structures dry lab TPU hardware" : domain === "Environmental Sciences" ? "soil moisture carbon respiration climate chambers" : domain === "Quantum Mechanics & Physics" ? "cryogenic fpga superconducting register retention" : "hyper-parameter search edge fpga"),
           abstract: "An evaluation of custom high-density silicon architectures. We benchmark parameter matching and state mapping behaviors under localized constraints.",
           summary: "Provides an alternative hardware benchmark supporting the scalability of the primary paper's findings."
         }
       ]
     };
     return columns;
-  };
-
-  // Dynamically generate the 5 nodes tailored to the active paper
-  const generateCitationGraph = (paperTitle: string) => {
-    const cleanTitle = paperTitle || "Current Study";
-    const words = cleanTitle.split(" ");
-    const centerShort = words.slice(0, 3).join(" ") + (words.length > 3 ? "..." : "");
-
-    let domain = "AI and ML Foundations";
-    if (cleanTitle.toLowerCase().includes("biolog") || cleanTitle.toLowerCase().includes("genet") || cleanTitle.toLowerCase().includes("protein") || cleanTitle.toLowerCase().includes("nutrient") || cleanTitle.toLowerCase().includes("crop")) {
-      domain = "Bioinformatics & Genetics";
-    } else if (cleanTitle.toLowerCase().includes("climate") || cleanTitle.toLowerCase().includes("carbon") || cleanTitle.toLowerCase().includes("ecolog") || cleanTitle.toLowerCase().includes("soil")) {
-      domain = "Environmental Sciences";
-    } else if (cleanTitle.toLowerCase().includes("quantum") || cleanTitle.toLowerCase().includes("physic") || cleanTitle.toLowerCase().includes("optics")) {
-      domain = "Quantum Mechanics & Physics";
-    }
-
-    const nodes = [
-      {
-        id: "up-1",
-        type: "upstream",
-        title: domain === "Bioinformatics & Genetics" 
-          ? "Foundational Models of Biological Network Topologies" 
-          : domain === "Environmental Sciences"
-          ? "A Standard Model of Soil Organic Carbon Sequestration"
-          : domain === "Quantum Mechanics & Physics"
-          ? "Generalized Quantum Information Storage Protocols"
-          : "Context-Aware Sequence Assembly and Attention Mechanisms",
-        authors: "A. Vaswani, K. Karpathy, et al.",
-        year: 2019,
-        citations: 1845,
-        isPreprint: false,
-        shortTitle: "Vaswani, 2019",
-        abstract: "This work establishes standard architectures for high-capacity sequence aggregation, laying the foundation for modern context attention gates.",
-        summary: "Introduced the core sequence optimization heuristics and contextual attention gates that paved the way for active context aggregation and high-dimensional parameter spaces.",
-        x: 60,
-        y: 60
-      },
-      {
-        id: "up-2",
-        type: "upstream",
-        title: domain === "Bioinformatics & Genetics"
-          ? "Iterative Assembly Approximations for Mitochondrial Sequencing"
-          : domain === "Environmental Sciences"
-          ? "Deep Neural Estimation of Methane and Soil Respiration Pathways"
-          : domain === "Quantum Mechanics & Physics"
-          ? "Stochastic Gradient Optimization for High-Dimensional Quantum Filters"
-          : "Lower-Bound Optimizations for Extreme Scale Parameter Backpropagation",
-        authors: "S. Bengio, L. Kingma, et al.",
-        year: 2021,
-        citations: 924,
-        isPreprint: true,
-        shortTitle: "Bengio, 2021",
-        abstract: "An optimization protocol utilizing dynamic, low-friction learning margins to accelerate multi-parameter mapping under heavy non-linear gradient variances.",
-        summary: "Empowered modern systems to converge faster under heavy load, offering the mathematical groundwork for dynamic hyper-parameter scaling used in this paper.",
-        x: 60,
-        y: 220
-      },
-      {
-        id: "center-node",
-        type: "center",
-        title: cleanTitle,
-        authors: result?.explanation_level ? `Synthesized under ${result.explanation_level} Level` : "Active Lumina Lab Study",
-        year: 2026,
-        citations: 42,
-        isPreprint: false,
-        shortTitle: centerShort,
-        abstract: abstract || "No abstract loaded.",
-        summary: "The active paper currently loaded into the Lumina Analysis Lab, deconstructing complex vocabulary and insights for active synthesis.",
-        x: 175,
-        y: 140
-      },
-      {
-        id: "down-1",
-        type: "downstream",
-        title: domain === "Bioinformatics & Genetics"
-          ? "Automating Protein Structure Alignment on Microsecond Scales"
-          : domain === "Environmental Sciences"
-          ? "Ecological Machine Representation of Crop Biomass Degradation"
-          : domain === "Quantum Mechanics & Physics"
-          ? "Real-time Multi-gate Quantum Coherence Synchronization"
-          : "Decentralized Routing Schemes for Multi-modal Attention Pipelines",
-        authors: "D. Hassabis, R. Sutskever, et al.",
-        year: 2026,
-        citations: 12,
-        isPreprint: true,
-        shortTitle: "Hassabis, 2026",
-        abstract: "A sequence aggregation framework showing that routing gradients laterally yields significant speedups for multi-modal and bio-parameter modeling.",
-        summary: "Expands the active paper's core methodology to decentralize multi-agent workloads, proving that its theoretical boundaries hold true in live, low-latency deployments.",
-        x: 290,
-        y: 60
-      },
-      {
-        id: "down-2",
-        type: "downstream",
-        title: domain === "Bioinformatics & Genetics"
-          ? "Evaluating Green Computing Overheads for Multi-omics Synthesis"
-          : domain === "Environmental Sciences"
-          ? "Global Agri-Data Benchmarks on Arid Soil Regeneration Models"
-          : domain === "Quantum Mechanics & Physics"
-          ? "Resource-aware Execution Paths in Quantum-Chemical Simulation"
-          : "Energy-efficient Hyper-parameter Search for High-dimensional Embeddings",
-        authors: "L. Feige, S. Altman, et al.",
-        year: 2026,
-        citations: 8,
-        isPreprint: false,
-        shortTitle: "Feige, 2026",
-        abstract: "We investigate operational and resource-aware tradeoffs of deployment caches, proposing concrete eco-efficiency offsets.",
-        summary: "Calculates the real-world operational budget required to run the active study's model at scale, introducing green-computing offsets for school/lab deployments.",
-        x: 290,
-        y: 220
-      }
-    ];
-
-    const links = [
-      { source: "up-1", target: "center-node", isPreprint: false },
-      { source: "up-2", target: "center-node", isPreprint: true },
-      { source: "center-node", target: "down-1", isPreprint: true },
-      { source: "center-node", target: "down-2", isPreprint: false }
-    ];
-
-    return { nodes, links };
   };
 
   const handleLoadNodeAsMain = async (node: any) => {
@@ -757,7 +427,28 @@ export default function App() {
   const getGroupedAndSortedPapers = () => {
     const groups: { [key: string]: LivePaper[] } = {};
     
-    livePapers.forEach(paper => {
+    // Apply filters first
+    const filteredPapers = livePapers.filter(paper => {
+      // Topic Filter
+      const paperTopic = paper.topic?.trim() || "General Science";
+      if (selectedTopic !== "All" && paperTopic !== selectedTopic) {
+        return false;
+      }
+
+      // Keyword Search
+      if (liveSearchQuery.trim()) {
+        const query = liveSearchQuery.toLowerCase();
+        const titleMatch = paper.title?.toLowerCase().includes(query);
+        const abstractMatch = paper.abstract?.toLowerCase().includes(query);
+        const authorMatch = paper.authors?.toLowerCase().includes(query);
+        const sourceMatch = paper.source_name?.toLowerCase().includes(query);
+        return titleMatch || abstractMatch || authorMatch || sourceMatch;
+      }
+
+      return true;
+    });
+
+    filteredPapers.forEach(paper => {
       const topic = paper.topic?.trim() || "General Science";
       if (!groups[topic]) {
         groups[topic] = [];
@@ -818,7 +509,7 @@ export default function App() {
         if (!response.ok) {
           throw new Error(`Server status ${response.status}`);
         }
-        const data = await response.json();
+        const data = await safeParseJson(response);
         if (data.papers && Array.isArray(data.papers)) {
           setLivePapers(data.papers);
         }
@@ -833,7 +524,10 @@ export default function App() {
     const fetchSourcesList = async () => {
       try {
         const response = await fetch("/api/sources");
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(`Server returned status ${response.status}`);
+        }
+        const data = await safeParseJson(response);
         if (data.sources && Array.isArray(data.sources)) {
           setSources(data.sources);
         }
@@ -845,6 +539,35 @@ export default function App() {
     fetchLivePapers();
     fetchSourcesList();
   }, []);
+
+  const handleScoutGrounding = async () => {
+    if (!scoutQuery.trim()) return;
+    setScouting(true);
+    setScoutError(null);
+    setScoutResults([]);
+    try {
+      const resp = await fetch("/api/research-scout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: scoutQuery, level: explanationLevel })
+      });
+      if (!resp.ok) {
+        throw new Error(`Scouting server error (status ${resp.status})`);
+      }
+      const data = await resp.json();
+      if (data.papers && Array.isArray(data.papers)) {
+        setScoutResults(data.papers);
+      } else {
+        setScoutResults([]);
+        setScoutError("No verified research papers were returned for this topic.");
+      }
+    } catch (err: any) {
+      console.error("Scout grounding error:", err);
+      setScoutError(err.message || "Failed to search the academic scout network.");
+    } finally {
+      setScouting(false);
+    }
+  };
 
   // Global keyboard shortcut to toggle High-Density Workspace mode
   useEffect(() => {
@@ -869,7 +592,13 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const runSimplification = async (currentTitle: string, currentAbstract: string, currentFullText: string, level: ExplanationLevel) => {
+  const runSimplification = async (
+    currentTitle: string, 
+    currentAbstract: string, 
+    currentFullText: string, 
+    level: ExplanationLevel,
+    metadata?: { authors?: string; publish_date?: string; year?: number; original_url?: string }
+  ) => {
     if (!currentTitle.trim() || !currentAbstract.trim()) {
       setError("Please provide at least a Title and Abstract to simplify.");
       return;
@@ -891,16 +620,44 @@ export default function App() {
           abstract: currentAbstract.trim(),
           fullText: currentFullText.trim() || undefined,
           explanationLevel: level,
+          authors: metadata?.authors,
+          publish_date: metadata?.publish_date,
+          original_url: metadata?.original_url,
+          year: metadata?.year,
+          pages: parsedPages && parsedPages.length > 0 ? parsedPages : undefined,
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to process the research paper.");
+        let errorMsg = "Failed to process the research paper.";
+        try {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errData = await safeParseJson(response);
+            errorMsg = errData.error || errorMsg;
+          } else {
+            const textHtml = await response.text();
+            console.warn("Express server returned raw response under status " + response.status, textHtml);
+          }
+        } catch (e) {
+          console.error("Failed to parse error response JSON", e);
+        }
+        throw new Error(errorMsg);
       }
 
-      setResult(data);
+      const data = await safeParseJson(response);
+
+      // Ensure client-side metadata overrides or complements if backend fields are missing
+      const finalData = {
+        ...data,
+        authors: data.authors || metadata?.authors || "Active Workspace Specimen",
+        publish_date: data.publish_date || metadata?.publish_date || "2026-06-07",
+        year: data.year || metadata?.year || (metadata?.publish_date ? parseInt(metadata.publish_date.split("-")[0]) : 2026),
+        original_url: data.original_url || metadata?.original_url || "",
+        original_title: data.original_title || currentTitle,
+      };
+
+      setResult(finalData);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An unexpected error occurred. Please try again.");
@@ -917,6 +674,12 @@ export default function App() {
     setJustImported(paper.title);
     setError(null);
     setFetchError(null);
+    setCrawlMetadata({
+      authors: paper.authors,
+      publish_date: paper.publish_date,
+      source_name: paper.source_name,
+      original_url: paper.original_url,
+    });
     
     // Clear toast message after 4 seconds
     setTimeout(() => {
@@ -924,7 +687,11 @@ export default function App() {
     }, 4000);
 
     // Auto-simplify right away
-    await runSimplification(paper.title, paper.abstract, "", explanationLevel);
+    await runSimplification(paper.title, paper.abstract, "", explanationLevel, {
+      authors: paper.authors,
+      publish_date: paper.publish_date,
+      original_url: paper.original_url,
+    });
   };
 
   const handleGoHome = () => {
@@ -936,6 +703,7 @@ export default function App() {
     setUrlInput("");
     setFetchError(null);
     setSelectedSampleId(null);
+    setCrawlMetadata(null);
   };
 
   const handleSaveToStudyLog = () => {
@@ -1018,15 +786,35 @@ export default function App() {
         body: JSON.stringify({ url: urlInput.trim() }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to download and parse paper content.");
+        let errorMsg = "Failed to download and parse paper content.";
+        try {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errData = await safeParseJson(response);
+            errorMsg = errData.error || errorMsg;
+          } else {
+            const textHtml = await response.text();
+            console.warn("Express server returned raw response under status " + response.status, textHtml);
+          }
+        } catch (e) {
+          console.error("Failed to parse error response JSON", e);
+        }
+        throw new Error(errorMsg);
       }
+
+      const data = await safeParseJson(response);
 
       setTitle(data.title || "");
       setAbstract(data.abstract || "");
       setFullText(data.fullText || "");
+      setParsedPages(data.pages || []);
+      setCrawlMetadata({
+        authors: data.authors,
+        publish_date: data.publish_date,
+        source_name: data.source_name,
+        original_url: urlInput.trim(),
+      });
       setUrlInput(""); // Clear field upon successful auto-fill
     } catch (err: any) {
       console.error("URL Fetch error:", err);
@@ -1039,7 +827,7 @@ export default function App() {
   // Submit and fetch parsed simplified results from our backend
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    await runSimplification(title, abstract, fullText, explanationLevel);
+    await runSimplification(title, abstract, fullText, explanationLevel, crawlMetadata || undefined);
   };
 
   // Utility to dynamically highlight jargon terms inside texts for maximum interactive benefit
@@ -1085,208 +873,7 @@ export default function App() {
     });
   };
 
-  const renderTextWithMathAndJargonHighlights = (text: string, cheatSheet: JargonCheatSheetItem[], isDetailView: boolean) => {
-    if (!text) return "";
-    
-    // First, let's resolve jargon matches using our standard logic
-    const jargonElements = renderTextWithJargonHighlights(text, cheatSheet);
-    
-    // If we're not in detail view or we don't have active paper details, just return the jargon highlights
-    if (!isDetailView || !result) {
-      return jargonElements;
-    }
 
-    const mathItem = getDecipheredMathForPaper(result.simplified_title, result.the_big_idea_detail || "", result.topic || "");
-
-    // Let's create a beautiful interactive button for the formula
-    const mathTriggerElement = (
-      <span key="math-trigger-span" className="inline-block mt-3 bg-[#FAF8F5] border border-[#7C8464]/30 rounded-2xl p-4 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-[#7C8464] animate-pulse"></span>
-            <span className="text-[10px] font-mono font-bold tracking-widest text-[#7C8464] uppercase">
-              Deciphered Math Formulations
-            </span>
-          </div>
-          <span className="text-[9px] font-mono text-[#8C8474] uppercase tracking-wider">
-            Click to Deconstruct Proof
-          </span>
-        </div>
-        
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setActiveMathId(activeMathId === mathItem.id ? null : mathItem.id);
-            }}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-mono font-medium rounded-xl border border-dashed text-[#2D2D24] transition-all duration-300 shadow-sm cursor-pointer select-none active:scale-98 group ${
-              activeMathId === mathItem.id 
-                ? "bg-[#7C8464]/10 border-[#7C8464] ring-1 ring-[#7C8464]/20" 
-                : "bg-white hover:bg-[#7C8464]/5 border-[#7C8464]/40"
-            }`}
-          >
-            <Clock className="h-3 w-3 text-[#7C8464] animate-pulse" />
-            <span className="max-w-full overflow-hidden text-ellipsis selection:bg-transparent">
-              {mathItem.displayText}
-            </span>
-            <ChevronDown className={`h-3 w-3 text-[#7C8464] transition-transform duration-300 ${activeMathId === mathItem.id ? "rotate-180" : ""}`} />
-          </button>
-        </div>
-      </span>
-    );
-
-    // Return the jargon paragraphs with our beautiful math trigger embedded elegantly underneath the main block
-    return (
-      <div className="flex flex-col w-full text-left">
-        <div className="leading-relaxed">{jargonElements}</div>
-        {mathTriggerElement}
-        {renderFeynmanLogicEngine(mathItem)}
-      </div>
-    );
-  };
-
-  const renderFeynmanLogicEngine = (mathItem: any) => {
-    if (!mathItem) return null;
-    return (
-      <AnimatePresence>
-        {activeMathId === mathItem.id && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, y: -8 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="overflow-hidden w-full mt-4"
-          >
-            <div className="bg-[#FAF8F5] border border-[#7C8464]/40 rounded-2xl p-5 shadow-inner flex flex-col gap-5 relative text-left">
-              
-              {/* Feynman Logic Engine Header */}
-              <div className="flex items-center justify-between border-b border-[#7C8464]/15 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 flex items-center justify-center">
-                      <Atom className="h-2 w-2 text-white animate-spin" />
-                    </span>
-                  </div>
-                  <h4 className="font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-[#2D2D24]">
-                    Feynman Logic Engine Active
-                  </h4>
-                </div>
-                <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-[#8C8474] bg-[#7C8464]/10 px-2 py-0.5 rounded border border-[#7C8464]/10">
-                  DERIVATION ID: {mathItem.id.toUpperCase()}-D-71
-                </span>
-              </div>
-
-              {/* Vertical Timeline Tree Layout */}
-              <div className="relative pl-6.5 flex flex-col gap-6 mt-1">
-                {/* Vertical continuous line */}
-                <div className="absolute left-[9px] top-3 bottom-3 w-[1px] bg-[#7C8464]/25 border-l border-dashed border-[#7C8464]/30" />
-
-                {/* Node 1: Historical Artifact/Origin */}
-                <div className="relative group/node flex flex-col gap-2">
-                  {/* Bullet icon */}
-                  <div className="absolute -left-[24px] top-0 h-5 w-5 rounded-full bg-white border border-[#7C8464] flex items-center justify-center shadow-sm text-[9px] font-mono font-bold text-[#7C8464] group-hover/node:bg-[#7C8464] group-hover/node:text-white transition-colors duration-200">
-                    1
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#B4A086] font-bold">
-                      Phase 1: The Historical Artifact &amp; Origin
-                    </span>
-                    <h5 className="font-serif font-bold text-[#2D2D24] text-sm mt-0.5 whitespace-normal">
-                      {mathItem.historicalOrigin.origin}
-                    </h5>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row gap-3.5 items-start bg-[#F4EFE6]/40 p-3.5 rounded-xl border border-[#E8E4D9] w-full">
-                    <div className="bg-[#2D2D24] text-[#EAE6D6] px-3 py-2 rounded-lg font-mono text-center text-xs font-semibold max-w-full md:max-w-[220px] shadow-sm select-all border border-black/10 flex-shrink-0">
-                      {mathItem.historicalOrigin.formula}
-                    </div>
-                    <p className="text-xs text-[#5A5A4A] leading-relaxed text-justify mt-1 select-text">
-                      {mathItem.historicalOrigin.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Node 2: Missing Academic Leaps */}
-                <div className="relative group/node flex flex-col gap-2">
-                  {/* Bullet icon */}
-                  <div className="absolute -left-[24px] top-0 h-5 w-5 rounded-full bg-white border border-[#7C8464] flex items-center justify-center shadow-sm text-[9px] font-mono font-bold text-[#7C8464] group-hover/node:bg-[#7C8464] group-hover/node:text-white transition-colors duration-200">
-                    2
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#7C8464] font-bold">
-                      Phase 2: The Missing Academic Leaps
-                    </span>
-                    <h5 className="font-serif font-bold text-[#2D2D24] text-sm mt-0.5">
-                      Omitted Mathematical Mechanics Deconstructed
-                    </h5>
-                  </div>
-
-                  <div className="bg-[#FAF8F5] p-4 rounded-xl border border-[#7C8464]/15 flex flex-col gap-3 shadow-inner">
-                    <p className="text-xs italic text-[#8C8474] font-medium border-b border-[#E8E4D9] pb-1.5 leading-snug">
-                      💡 {mathItem.missingLeaps.description}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
-                      {mathItem.missingLeaps.steps.map((step, idx) => {
-                        const [titlePart, detailPart] = step.split(": ");
-                        return (
-                          <div key={idx} className="bg-[#F2EDE4]/20 p-3 rounded-lg border border-[#E8E4D9] flex gap-2 w-full text-left">
-                            <span className="text-[9px] font-mono text-[#7C8464] font-bold flex-shrink-0">
-                              [{idx + 1}]
-                            </span>
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-xs font-bold text-[#2D2D24]">{titlePart}</span>
-                              <span className="text-[11px] text-[#5A5A4A] leading-relaxed text-justify">{detailPart}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 3: Modern Software Application */}
-                <div className="relative group/node flex flex-col gap-2">
-                  {/* Bullet icon */}
-                  <div className="absolute -left-[24px] top-0 h-5 w-5 rounded-full bg-white border border-[#7C8464] flex items-center justify-center shadow-sm text-[9px] font-mono font-bold text-[#7C8464] group-hover/node:bg-[#7C8464] group-hover/node:text-white transition-colors duration-200">
-                    3
-                  </div>
-
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-indigo-700 font-bold">
-                      Phase 3: Modern Software Application
-                    </span>
-                    <h5 className="font-serif font-bold text-[#2D2D24] text-sm mt-0.5">
-                      {mathItem.modernApplication.topic}
-                    </h5>
-                  </div>
-
-                  <div className="flex flex-col gap-2.5 bg-[#1E1E1C] p-4 rounded-xl text-white border border-neutral-800 shadow-sm font-mono text-left w-full font-sans">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-1.5 text-[9px] text-neutral-400">
-                      <span>DEVELOPER ALGORITHM PARAMS</span>
-                      <span className="text-[#7C8464] uppercase font-bold tracking-wider font-sans">COMPILED ROUTING</span>
-                    </div>
-                    <pre className="text-xs text-[#EAE6D6] leading-relaxed overflow-x-auto whitespace-pre py-1 max-w-full select-all font-mono">
-                      <code>{mathItem.modernApplication.parameter}</code>
-                    </pre>
-                    <div className="text-[11px] text-neutral-400 leading-normal border-t border-white/5 pt-1.5 text-justify select-text font-sans">
-                      {mathItem.modernApplication.description}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    );
-  };
 
   // Filter jargon items
   const filteredJargon = result?.jargon_cheat_sheet?.filter(item => 
@@ -1318,20 +905,6 @@ export default function App() {
         >
           <Network className="h-4 w-4 text-[#7C8464] group-hover:text-white transition-colors animate-pulse" />
           <span>Explore Horizon Map</span>
-        </button>
-
-        <button
-          onClick={() => setShowHorizonMap(true)}
-          className="fixed right-0 top-[35%] -translate-y-1/2 z-40 bg-[#7C8464] hover:bg-[#6A7153] text-white pl-4.5 pr-3 py-5 rounded-l-2xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:pl-5.5 flex flex-col items-center gap-3 cursor-pointer select-none active:scale-95 border-l-0 border border-[#6A7153]/50 animate-fade-in"
-          style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-          id="horizon-map-floating-tab"
-        >
-          <div className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-[#F9F7F2]">
-            <div className="-rotate-90 py-1">
-              <Network className="h-4 w-4 text-[#EAE6D6]" />
-            </div>
-            <span className="mt-1">Horizon Map</span>
-          </div>
         </button>
       </div>
     );
@@ -1436,12 +1009,11 @@ export default function App() {
           </h3>
           
           <div className="text-[#5A5A4A] leading-relaxed text-[15px] space-y-4">
-            {renderTextWithMathAndJargonHighlights(
+            {renderTextWithJargonHighlights(
               viewMode === "concept"
                 ? (result.the_big_idea_concept || result.the_big_idea || "")
                 : (result.the_big_idea_detail || result.the_big_idea || ""),
-              result.jargon_cheat_sheet,
-              viewMode === "detail"
+              result.jargon_cheat_sheet
             )}
           </div>
         </div>
@@ -1501,6 +1073,55 @@ export default function App() {
     );
   };
 
+  const renderGroundedEvidence = () => {
+    if (!result || !result.findings || result.findings.length === 0) return null;
+    return (
+      <div className="bg-white rounded-[32px] p-7 shadow-sm border border-[#E8E4D9] flex flex-col gap-4 overflow-hidden">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-[#7C8464] flex items-center gap-2">
+          <ShieldAlert className="h-4.5 w-4.5 text-[#7C8464]" /> Verifiable Academic Grounding Matrix
+        </h3>
+        
+        <div>
+          <h4 className="text-xl font-serif font-bold text-[#2D2D24] mb-1">
+            Grounded RAG Proofs
+          </h4>
+          <p className="text-xs text-[#8C8474] font-mono leading-relaxed">
+            Every simplified key statement below is directly linked to raw PDF context pages with character-accurate verbatim quoting.
+          </p>
+        </div>
+
+        <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+          {result.findings.map((f, idx) => (
+            <div 
+              key={idx} 
+              className="p-4 bg-[#F9F7F2] rounded-2xl border border-[#E8E4D9] flex flex-col gap-2.5 hover:border-[#7C8464]/30 transition-all duration-300"
+            >
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-[10px] font-bold text-[#7C8464] bg-[#7C8464]/10 border border-[#7C8464]/20 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
+                  Page {f.source_page}
+                </span>
+                <span className="text-[9px] text-[#8C8474] font-mono uppercase tracking-wider leading-none">
+                  Citation ID: [P-{f.source_page}-{idx+1}]
+                </span>
+              </div>
+              
+              <p className="text-[13px] font-bold text-[#2D2D24] leading-snug">
+                {f.finding_statement}
+              </p>
+              
+              <div className="text-[11px] text-[#5A5A4A] bg-white border border-[#E8E4D9]/60 rounded-xl p-3 italic relative font-mono leading-relaxed">
+                <span className="text-[#8C8474]/40 font-serif font-bold text-lg select-none leading-none absolute top-1 left-2">“</span>
+                <div className="pl-4 pr-1 text-[11px] text-[#5A5A4A]">
+                  {f.verbatim_quote}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderBigIdeaGrid = () => {
     if (!result) return null;
     return (
@@ -1546,343 +1167,64 @@ export default function App() {
   const renderThesisValidationMatrix = () => {
     if (!result) return null;
     return (
-      <div className="bg-white rounded-[32px] p-7 border border-[#E8E4D9] shadow-sm flex flex-col gap-5">
-        <div className="flex items-center justify-between border-b border-[#F2EDE4] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#7C8464]/10 p-2.5 rounded-xl text-[#7C8464]">
-              <GitCompare className="h-5 w-5 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-[#2D2D24] text-lg sm:text-xl leading-tight">
-                Thesis Validation &amp; Dialectics Matrix
-              </h3>
-              <p className="text-[10px] text-[#8C8474] font-mono tracking-wider uppercase mt-0.5">
-                Mapping replication, active critiques, and methodological variables
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setIsMatrixExpanded(!isMatrixExpanded)}
-            className="p-1 px-3 bg-[#F9F7F2] hover:bg-[#F2EDE4] border border-[#E8E4D9] rounded-xl text-xs font-bold text-[#5A5A4A] transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            {isMatrixExpanded ? (
-              <>
-                <span>Hide Matrix</span>
-                <ChevronUp className="h-3.5 w-3.5 text-[#7C8464]" />
-              </>
-            ) : (
-              <>
-                <span>Show Matrix</span>
-                <ChevronDown className="h-3.5 w-3.5 text-[#7C8464]" />
-              </>
-            )}
-          </button>
-        </div>
-
-        <AnimatePresence>
-          {isMatrixExpanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              {/* Main 3 Column Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-                {(() => {
-                  const matrix = generateThesisValidationMatrix(result.simplified_title);
-                  
-                  return (
-                    <>
-                      {/* Column 1: Supporting Evidence & Replications */}
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 px-1 py-1 bg-[#7C8464]/5 border border-[#7C8464]/15 rounded-xl">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#7C8464]">
-                            Support &amp; Replications
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col gap-3.5">
-                          {matrix.supporting.map((card) => {
-                            const isCardActive = splitScreenPaper?.id === card.id;
-                            return (
-                              <div
-                                key={card.id}
-                                onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                onMouseLeave={() => setHoveredMatrixCard(null)}
-                                className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                  isCardActive 
-                                    ? "bg-[#7C8464]/10 border-[#7C8464] ring-1 ring-[#7C8464]/20" 
-                                    : "border-[#E8E4D9] hover:border-[#7C8464] hover:bg-white"
-                                }`}
-                              >
-                                {/* Micro Border Indicator */}
-                                <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-[#7C8464]" />
-                                
-                                {/* High Density Metadata Header */}
-                                <div className="flex justify-between items-center gap-2 pl-1">
-                                  <span className="text-[10px] font-mono font-bold text-[#7C8464] bg-[#7C8464]/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                    {card.journal}
-                                  </span>
-                                  <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                    ★ Citations: <strong>{card.citations}</strong>
-                                  </span>
-                                </div>
-
-                                <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                  By {card.authors}
-                                </p>
-
-                                <div className="pl-1">
-                                  <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                    {card.claim}
-                                  </h4>
-                                  <p className="text-[11px] text-[#5A5A4A] leading-relaxed mt-2 p-2 rounded-lg bg-[#7C8464]/5 border border-[#7C8464]/10 italic font-medium">
-                                    {card.convergence}
-                                  </p>
-                                </div>
-
-                                {/* Split Button Action Layout */}
-                                <div className="flex gap-1.5 mt-2 pl-1">
-                                  <button
-                                    onClick={() => setSplitScreenPaper(card)}
-                                    className="flex-1 bg-[#7C8464] hover:bg-[#6A7153] text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                  >
-                                    <GitCompare className="h-3 w-3" />
-                                    <span>Split-Screen</span>
-                                  </button>
-                                  <a
-                                    href={card.originalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                  >
-                                    <span>Source</span>
-                                    <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                  </a>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Column 2: Conflicting Results, Critiques & Counter-arguments */}
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 px-1 py-1 bg-amber-500/5 border border-amber-500/15 rounded-xl">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700">
-                            Critiques &amp; Friction
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col gap-3.5">
-                          {matrix.conflicting.map((card) => {
-                            const isCardActive = splitScreenPaper?.id === card.id;
-                            return (
-                              <div
-                                key={card.id}
-                                onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                onMouseLeave={() => setHoveredMatrixCard(null)}
-                                className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                  isCardActive 
-                                    ? "bg-amber-50 border-amber-500 ring-1 ring-amber-500/20" 
-                                    : "border-[#E8E4D9] hover:border-amber-600/40 hover:bg-white"
-                                }`}
-                              >
-                                {/* Micro Border Indicator */}
-                                <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-amber-600" />
-                                
-                                {/* High Density Metadata Header */}
-                                <div className="flex justify-between items-center gap-2 pl-1">
-                                  <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-600/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                    {card.journal}
-                                  </span>
-                                  <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                    ★ Citations: <strong>{card.citations}</strong>
-                                  </span>
-                                </div>
-
-                                <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                  By {card.authors}
-                                </p>
-
-                                <div className="pl-1">
-                                  <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                    {card.claim}
-                                  </h4>
-                                  <p className="text-[11px] text-amber-900 leading-relaxed mt-2 p-2 rounded-lg bg-amber-600/5 border border-amber-600/10 italic font-medium">
-                                    {card.convergence}
-                                  </p>
-                                </div>
-
-                                {/* Split Button Action Layout */}
-                                <div className="flex gap-1.5 mt-2 pl-1">
-                                  <button
-                                    onClick={() => setSplitScreenPaper(card)}
-                                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                  >
-                                    <GitCompare className="h-3 w-3" />
-                                    <span>Split-Screen</span>
-                                  </button>
-                                  <a
-                                    href={card.originalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                  >
-                                    <span>Source</span>
-                                    <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                  </a>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Column 3: Methodological Variations & Benchmarks */}
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 px-1 py-1 bg-slate-500/5 border border-slate-500/15 rounded-xl">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700">
-                            Method Variations
-                          </span>
-                        </div>
-
-                        <div className="flex flex-col gap-3.5">
-                          {matrix.methodological.map((card) => {
-                            const isCardActive = splitScreenPaper?.id === card.id;
-                            return (
-                              <div
-                                key={card.id}
-                                onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                onMouseLeave={() => setHoveredMatrixCard(null)}
-                                className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                  isCardActive 
-                                    ? "bg-slate-50 border-slate-500 ring-1 ring-slate-500/20" 
-                                    : "border-[#E8E4D9] hover:border-slate-500/40 hover:bg-white"
-                                }`}
-                              >
-                                {/* Micro Border Indicator */}
-                                <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-slate-500" />
-                                
-                                {/* High Density Metadata Header */}
-                                <div className="flex justify-between items-center gap-2 pl-1">
-                                  <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-500/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                    {card.journal}
-                                  </span>
-                                  <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                    ★ Citations: <strong>{card.citations}</strong>
-                                  </span>
-                                </div>
-
-                                <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                  By {card.authors}
-                                </p>
-
-                                <div className="pl-1">
-                                  <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                    {card.claim}
-                                  </h4>
-                                  <p className="text-[11px] text-slate-950 leading-relaxed mt-2 p-2 rounded-lg bg-slate-500/5 border border-slate-500/10 italic font-medium">
-                                    {card.convergence}
-                                  </p>
-                                </div>
-
-                                {/* Split Button Action Layout */}
-                                <div className="flex gap-1.5 mt-2 pl-1">
-                                  <button
-                                    onClick={() => setSplitScreenPaper(card)}
-                                    className="flex-1 bg-slate-500 hover:bg-slate-600 text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                  >
-                                    <GitCompare className="h-3 w-3" />
-                                    <span>Split-Screen</span>
-                                  </button>
-                                  <a
-                                    href={card.originalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                  >
-                                    <span>Source</span>
-                                    <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                  </a>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <ThesisValidationMatrix
+        simplifiedTitle={result.simplified_title}
+        year={result.year}
+        splitScreenPaper={splitScreenPaper}
+        setSplitScreenPaper={setSplitScreenPaper}
+        setHoveredMatrixCard={setHoveredMatrixCard}
+      />
     );
   };
 
   const renderJargonGlossary = () => {
     if (!result) return null;
     return (
-      <div className="bg-[#EAE6D6] rounded-[32px] p-7 border border-[#D6D0C2] flex flex-col gap-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <JargonGlossary
+        jargonCheatSheet={result.jargon_cheat_sheet}
+        highDensity={highDensity}
+        pulsingTerm={pulsingTerm}
+      />
+    );
+  };
+
+  const renderReviewerArenaBanner = () => {
+    if (!result) return null;
+    return (
+      <div className="bg-white border border-amber-900/20 rounded-[32px] p-6 sm:p-7 shadow-2xs flex flex-col md:flex-row justify-between items-center gap-5 relative overflow-hidden">
+        {/* Amber aesthetic light accent */}
+        <div className="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/5 rounded-full pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-amber-500/5 rounded-full pointer-events-none" />
+
+        <div className="flex items-start gap-4">
+          <div className="bg-amber-950 text-amber-400 p-3 h-11 w-11 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pulse">
+            <ShieldAlert className="h-5 w-5" />
+          </div>
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#5A5A4A] flex justify-between items-center w-full">
-              <span>Jargon Cheat Sheet</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-900 bg-amber-500/10 px-2 py-0.5 rounded">
+                Interactive Curriculum Challenge
+              </span>
+              <span className="text-[9px] font-mono text-[#8C8474]">
+                Gamified Arena
+              </span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-serif font-black text-natural-title mt-1.5">
+              Reviewer #3 Arena: Stress-Test claims!
             </h3>
-            <p className="text-[11px] text-[#8C8474] mt-1 font-mono">
-              {result.jargon_cheat_sheet.length} terms deconstructed into simple analogies
+            <p className="text-xs text-natural-text leading-relaxed mt-1 max-w-xl">
+              Don't just read passively. Step into the arena to adjust core mathematical parameters (latency, thermal heat, and electromagnetic fields) via interactive sliders, exposing model collapse boundaries!
             </p>
           </div>
-
-          <div className="relative flex-shrink-0 w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Search jargon terms..."
-              value={jargonQuery}
-              onChange={(e) => setJargonQuery(e.target.value)}
-              className="w-full text-xs p-2.5 pl-8 bg-white/60 border border-[#D6D0C2] rounded-xl focus:border-[#7C8464] focus:outline-none placeholder:text-[#8C8474]/70"
-            />
-            <Search className="h-3.5 w-3.5 text-[#8C8474]/80 absolute left-2.5 top-1/2 -translate-y-1/2" />
-          </div>
         </div>
 
-        <div className={highDensity ? "flex flex-col gap-2.5 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
-          {filteredJargon && filteredJargon.length > 0 ? (
-            filteredJargon.map((item, idx) => {
-              const isPulsing = pulsingTerm?.toLowerCase() === item.term.toLowerCase();
-              const termId = item.term.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-              
-              return (
-                <div 
-                  key={idx} 
-                  id={`jargon-card-${termId}`}
-                  className={`rounded-2xl p-4 flex flex-col gap-1.5 transition-all duration-300 ${
-                    isPulsing 
-                      ? "jargon-card-pulse border-[#7C8464] shadow-md" 
-                      : "bg-white/40 border border-white/40 hover:bg-white/60"
-                  }`}
-                >
-                  <span className="font-serif font-bold text-[#2D2D24] text-base flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isPulsing ? "bg-[#7C8464] scale-125" : "bg-[#7C8464]"}`} />
-                    {item.term}
-                  </span>
-                  <p className={`italic text-xs sm:text-sm leading-relaxed p-2.5 rounded-xl transition-all duration-300 ${isPulsing ? "text-[#2D2D24] bg-white/70" : "text-[#5A5A4A] bg-white/40"}`}>
-                    "{item.simple_definition}"
-                  </p>
-                </div>
-              );
-            })
-          ) : (
-            <div className="col-span-2 text-center text-[#8C8474] text-xs py-6">
-              No matching jargon terms in this cheat sheet.
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setShowReviewChallenge(true)}
+          className="w-full md:w-auto flex-shrink-0 bg-amber-950 hover:bg-amber-900 text-[#F9F7F2] font-black py-3 px-6 rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-amber-950"
+        >
+          <Sliders className="h-4 w-4 text-amber-400" />
+          <span>START REVIEW CHALLENGE</span>
+        </button>
       </div>
     );
   };
@@ -1898,6 +1240,13 @@ export default function App() {
           >
             <BookMarked className="h-3.5 w-3.5" />
             Save to Study Log
+          </button>
+          <button 
+            onClick={() => setShowReviewChallenge(true)}
+            className="px-5 py-2.5 bg-amber-950 hover:bg-amber-900 border border-amber-950 text-[#F9F7F2] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+            Review Challenge
           </button>
           <button 
             onClick={() => alert("Link copied to clipboard! Share with your biology class study group.")}
@@ -1919,151 +1268,76 @@ export default function App() {
     );
   };
 
-  // Filter jargon items
-
   return (
-    <div className="min-h-screen bg-[#F9F7F2] text-[#434338] flex flex-col antialiased">
-      {/* Top Banner - Natural Tones Theme Navigation */}
-      <nav className="px-6 py-5 sm:px-10 sm:py-6 flex flex-col sm:flex-row justify-between items-center bg-white/50 border-b border-[#E8E4D9] gap-4">
+    <div className="min-h-screen bg-natural-bg text-natural-text flex flex-col antialiased">
+      {/* Top Banner - Quanta Magazine Style Navigation */}
+      <nav className="px-6 py-6 sm:px-10 flex flex-col sm:flex-row justify-between items-center bg-white border-b border-natural-border gap-4">
         <div className="flex items-center gap-3">
           <div 
             onClick={handleGoHome}
-            className="flex items-center gap-3 cursor-pointer group select-none active:scale-98 transition-transform"
+            className="flex flex-col cursor-pointer group select-none active:scale-98 transition-transform"
           >
-            {/* Symphery Custom Scientific S-DNA Logo */}
-            <SympheryIcon className="h-10 w-10 flex-shrink-0 group-hover:scale-105 transition-all duration-300" />
-
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-3xl font-science font-black uppercase tracking-[0.08em] text-[#2D2D24] group-hover:text-[#7C8464] transition-colors leading-none">
-                  Lumina
-                </h1>
-                <Atom className="h-4.5 w-4.5 text-[#7C8464] animate-[spin_8s_linear_infinite] group-hover:text-[#2D2D24] transition-colors" />
-              </div>
-            
+            <div className="flex items-baseline gap-2.5">
+              <h1 className="text-2xl font-serif font-bold tracking-tight text-[#141312] group-hover:text-natural-primary transition-colors leading-none">
+                Lumina
+              </h1>
+             
             </div>
+            <span className="text-[9px] font-sans text-[#8C8474] mt-1 tracking-wide font-medium">
+              Interactive Academic Research Simplifier
+            </span>
           </div>
         </div>
 
-       
-
-        <div className="flex items-center flex-wrap gap-4 justify-center sm:justify-end">
-          
-
+        <div className="flex items-center flex-wrap gap-3 justify-center sm:justify-end">
           {/* Lumina Fusion Toggle Button */}
           <button
             onClick={() => setShowFusionLab(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
+            className={`text-xs px-4 py-2 rounded-lg border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
               showFusionLab
-                ? "bg-[#7C8464] text-white border-[#7C8464]"
-                : "bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#F2EDE4] hover:text-[#7C8464]"
+                ? "bg-natural-primary text-white border-natural-primary"
+                : "bg-white border-natural-border text-natural-text hover:bg-natural-highlight hover:text-natural-primary"
             }`}
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-3.5 w-3.5 text-natural-primary" />
             <span>Fusion Lab</span>
             {(fusionPaperA || fusionPaperB) && (
-              <span className="inline-flex items-center justify-center text-[10px] h-5 min-w-[20px] px-1 rounded-full font-mono font-bold bg-[#7C8464] text-white">
+              <span className="inline-flex items-center justify-center text-[10px] h-5 min-w-[20px] px-1.5 rounded-full font-mono font-bold bg-natural-primary text-white">
                 {(fusionPaperA ? 1 : 0) + (fusionPaperB ? 1 : 0)}
               </span>
             )}
           </button>
 
-          {/* Bidirectional Cross-Disciplinary Analogy Playground Button */}
-          <button
-            onClick={() => setShowAnalogy(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showAnalogy
-                ? "bg-amber-900 text-white border-amber-900"
-                : "bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#FAF8F5] hover:text-amber-900 hover:border-amber-900"
-            }`}
-          >
-            <GitCompare className="h-3.5 w-3.5 animate-pulse" />
-            <span>Analogy Playground</span>
-          </button>
-
-          {/* Cross-Domain Variable Injector Button */}
-          <button
-            onClick={() => setShowInjector(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showInjector
-                ? "bg-[#7C8464] text-white border-[#7C8464]"
-                : "bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#F2EDE4] hover:text-[#7C8464]"
-            }`}
-          >
-            <ArrowRightLeft className="h-3.5 w-3.5" />
-            <span>Variable Injector</span>
-          </button>
-
-          {/* Generative Math Compiler Button */}
-          <button
-            onClick={() => setShowMathCompiler(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showMathCompiler
-                ? "bg-[#2D2D24] text-white border-[#2D2D24]"
-                : "bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#F2EDE4] hover:text-[#2D2D24]"
-            }`}
-          >
-            <Dna className="h-3.5 w-3.5" />
-            <span>Math Compiler</span>
-          </button>
-
-          {/* Dialectical Synthesis Engine Button */}
-          <button
-            onClick={() => setShowDialectical(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showDialectical
-                ? "bg-amber-800 text-white border-amber-800"
-                : "bg-white border-[#E8E2D2] text-[#5C5340] hover:bg-[#F2EDE4] hover:text-amber-800"
-            }`}
-          >
-            <GitMerge className="h-3.5 w-3.5" />
-            <span>Dialectical Engine</span>
-          </button>
-
-          {/* Rosetta Canvas Button */}
-          <button
-            onClick={() => setShowRosetta(true)}
-            className={`text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showRosetta
-                ? "bg-indigo-950 text-white border-indigo-950"
-                : "bg-white border-[#E8E2D2] text-[#5C5340] hover:bg-indigo-50 hover:text-indigo-950"
-            }`}
-          >
-            <BookMarked className="h-3.5 w-3.5" />
-            <span>Rosetta Canvas</span>
-          </button>
-
           {/* Reading List Toggle Button */}
           <button
             onClick={() => setShowReadingList(!showReadingList)}
-            className={`relative text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
+            className={`relative text-xs px-4 py-2 rounded-lg border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
               showReadingList
-                ? "bg-[#7C8464] text-white border-[#7C8464]"
-                : "bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#F2EDE4]"
+                ? "bg-natural-primary text-white border-natural-primary"
+                : "bg-white border-natural-border text-natural-text hover:bg-natural-highlight"
             }`}
           >
-            <BookMarked className="h-3.5 w-3.5" />
-            <span>Reading List</span>
+            <BookMarked className="h-3.5 w-3.5 text-natural-primary" />
+            <span>My Reading List</span>
             {readingList.length > 0 && (
-              <span className={`inline-flex items-center justify-center text-[10px] h-5 min-w-[20px] px-1 rounded-full font-mono font-bold ${
-                showReadingList ? "bg-white text-[#7C8464]" : "bg-[#7C8464] text-white"
+              <span className={`inline-flex items-center justify-center text-[10px] h-5 min-w-[20px] px-1.5 rounded-full font-mono font-bold ${
+                showReadingList ? "bg-white text-natural-primary" : "bg-natural-primary text-white"
               }`}>
                 {readingList.length}
               </span>
             )}
           </button>
 
-          {/* About us Button - dedicated page */}
+          {/* About Us Button */}
           <button
             onClick={() => setShowAboutUs(true)}
-            className="text-xs px-4 py-2 rounded-xl border font-bold flex items-center gap-2 bg-white border-[#E8E4D9] text-[#5A5A4A] hover:bg-[#F2EDE4] hover:text-[#7C8464] transition-all cursor-pointer select-none active:scale-95"
+            className="text-xs px-4 py-2 rounded-lg border font-bold flex items-center gap-2 bg-white border-natural-border text-natural-text hover:bg-natural-highlight hover:text-natural-primary transition-all cursor-pointer select-none active:scale-95"
           >
-            <Compass className="h-3.5 w-3.5" />
+            <Compass className="h-3.5 w-3.5 text-natural-primary" />
             <span>About Us</span>
           </button>
 
           <div className="flex items-center gap-2">
-             
             <div className="relative">
               <select
                 value={explanationLevel}
@@ -2071,84 +1345,118 @@ export default function App() {
                   const newLevel = e.target.value as ExplanationLevel;
                   setExplanationLevel(newLevel);
                   if (title && abstract) {
-                    runSimplification(title, abstract, fullText, newLevel);
+                    runSimplification(title, abstract, fullText, newLevel, crawlMetadata || undefined);
                   }
                 }}
-                className="text-xs px-3.5 py-2 bg-[#F2EDE4]/60 hover:bg-[#E8E4D9]/80 border border-[#E8E4D9] rounded-xl focus:border-[#7C8464] focus:ring-1 focus:ring-[#7C8464] focus:outline-none transition-all cursor-pointer appearance-none text-[#2D2D24] font-bold pr-8"
+                className="text-xs px-3 py-2 bg-natural-highlight hover:bg-natural-border border border-natural-border rounded-lg focus:border-natural-primary focus:ring-1 focus:ring-natural-primary focus:outline-none transition-all cursor-pointer appearance-none text-natural-title font-bold pr-8"
               >
-                <option value="Middle School">Middle School (Grades 6-8)</option>
-                <option value="High School">High School (Grades 9-12)</option>
-                <option value="Undergrad">Undergrad (College Degree)</option>
-                <option value="Graduate">Graduate (M.Sc./Ph.D. Track)</option>
-                <option value="PhD">PhD (Postdoc/Expert Peer)</option>
+                <option value="Middle School">Middle School Standard</option>
+                <option value="High School">High School Teacher</option>
+                <option value="Undergrad">Undergrad Professor</option>
+                <option value="Graduate">Graduate Advisor</option>
+                <option value="PhD">Postdoc Research Peer</option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-[#7C8464]">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-natural-primary">
                 <svg className="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                   <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                 </svg>
               </div>
             </div>
           </div>
-          
         </div>
       </nav>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-          {/* Right panel: Visualization & Simplification (7 columns) */}
-          <section className="lg:col-span-7 flex flex-col gap-6">
-            
-            <AnimatePresence mode="wait">
-              
-              {/* Idle Welcome Screen */}
-              {!loading && !error && !result && (
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8" id="main-editor-container">
+        <section className="w-full flex flex-col gap-6">
+          <AnimatePresence mode="wait">
+            {!loading && !error && !result && (
                 <div className="flex flex-col gap-6">
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -15 }}
-                    className="bg-white border border-[#E8E4D9] rounded-[32px] p-8 sm:p-12 text-center shadow-sm flex flex-col items-center justify-center gap-6"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-5"
                   >
-                    
-                    
-                    <div className="max-w-md">
-                      <h3 className="text-xl font-serif font-bold text-[#2D2D24]">
-                        {explanationLevel === "Middle School" && "Your Fun Middle School Tutor is Ready!"}
-                        {explanationLevel === "High School" && "Your High School Science Teacher is Ready!"}
-                        {explanationLevel === "Undergrad" && "Your College Professor is Ready!"}
-                        {explanationLevel === "Graduate" && "Your Senior Research Advisor is Ready!"}
-                        {explanationLevel === "PhD" && "Your Faculty Peer Reviewer is Ready!"}
-                      </h3>
-                      <p className="text-[#5A5A4A] text-sm mt-3 leading-relaxed">
-                        College and professional research papers are filled with heavy academic jargon and exhausting syntax. 
-                      </p>
-                      <p className="text-[#5A5A4A] text-sm mt-2 leading-relaxed">
-                        {explanationLevel === "Middle School" && "Explain things to me like I am 12 years old! We will translate difficult topics into fun, visual, and highly memorable games and playground models."}
-                        {explanationLevel === "High School" && "We will translate collegiate concepts into intuitive, analogy-rich explanations suited perfectly for 10th and 11th grade minds!"}
-                        {explanationLevel === "Undergrad" && "Analyze breakthroughs with collegiate scientific language, bridging fundamental chemistry/biology and highlighting core experimental design."}
-                        {explanationLevel === "Graduate" && "Scrutinize advanced procedures, methodologies, statistical boundaries, and systemic limitations for Masters/Ph.D. level minds."}
-                        {explanationLevel === "PhD" && "Peer-to-peer appraisal and deep mechanistic breakdown of theoretical constraints, kinetic boundaries, and academic validity."}
-                      </p>
+                    {/* Box 1: Cohort Standard */}
+                    <div className="bg-white border border-natural-border rounded-xl p-5 shadow-2xs flex flex-col justify-between h-full hover:border-[#7C8464]/30 transition-all group">
+                      <div className="flex flex-col gap-3">
+                       
+                        <div>
+                          <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-[#7C8464]">
+                            Cohort Standard
+                          </span>
+                          <h4 className="text-sm font-serif font-black text-natural-title mt-1">
+                            {explanationLevel} Level
+                          </h4>
+                          <p className="text-[#8C8474] text-[11px] mt-2 leading-relaxed">
+                            Science insights styled according to your target comprehension depth and classroom requirements.
+                          </p>
+                        </div>
+                      </div>
+                     
                     </div>
 
-                    
-                  </motion.div>
+                    {/* Box 2: Interactive Science Desk */}
+                    <div className="bg-white border border-natural-border rounded-xl p-5 shadow-2xs flex flex-col justify-between h-full hover:border-[#7C8464]/30 transition-all group">
+                      <div className="flex flex-col gap-3">
+                        
+                        <div>
+                          <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-[#8C8474]">
+                            Workspace Desk
+                          </span>
+                          <h4 className="text-sm font-serif font-black text-natural-title mt-1">
+                            {explanationLevel === "Middle School" && "Middle School Science Desk"}
+                            {explanationLevel === "High School" && "High School Science Desk"}
+                            {explanationLevel === "Undergrad" && "Collegiate Science Seminar"}
+                            {explanationLevel === "Graduate" && "Graduate Research Portfolio"}
+                            {explanationLevel === "PhD" && "PhD Review & Assessment Board"}
+                          </h4>
+                          <p className="text-[#8C8474] text-[11px] mt-2 leading-relaxed">
+                            Translating intricate collegiate publications into clear, interactive editorial narratives with contextual jargon sheets.
+                          </p>
+                        </div>
+                      </div>
+                      
+                    </div>
 
+                    {/* Box 3: Pedagogical Focus & Standard */}
+                    <div className="bg-white border border-natural-border rounded-xl p-5 shadow-2xs flex flex-col justify-between h-full hover:border-[#7C8464]/30 transition-all group">
+                      <div className="flex flex-col gap-3">
+                      
+                        <div>
+                          <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-[#8C8474]">
+                            Objective Goal
+                          </span>
+                          <h4 className="text-sm font-serif font-black text-natural-title mt-1">
+                            Curriculum Alignment
+                          </h4>
+                          <p className="text-[#5A5A4A] text-[11px] mt-2 leading-relaxed italic bg-[#F9F7F2]/60 p-2.5 rounded-lg border border-[#E8E4D9]/50">
+                            {explanationLevel === "Middle School" && "🔬 Explaining biology via visual metaphors and memorable models."}
+                            {explanationLevel === "High School" && "📚 Intricate concepts deconstructed into analogy-driven cellular schemas."}
+                            {explanationLevel === "Undergrad" && "🎓 College-level academic mechanics, bridging pathways and experiments."}
+                            {explanationLevel === "Graduate" && "🔬 Scrutinizing methodologies, errors, and experimental candor."}
+                            {explanationLevel === "PhD" && "🧠 Deconstructing kinetic metrics, statistics, and validity limits."}
+                          </p>
+                        </div>
+                      </div>
+                      
+                    </div>
+                  </motion.div>
+ 
                   {/* Curated Platform Live Feed */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-white border border-[#E8E4D9] rounded-[32px] p-6 sm:p-8 shadow-sm flex flex-col gap-6"
+                    className="bg-white border border-natural-border rounded-xl p-6 sm:p-8 shadow-xs flex flex-col gap-6"
                   >
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                       <div>
-                     
-                        <h4 className="text-lg font-serif font-bold text-[#2D2D24] mt-1">
+                        <h4 className="text-lg font-serif font-black text-natural-title tracking-tight">
                           Latest Publications & Articles
                         </h4>
-                       
                       </div>
 
                       {/* Sync button */}
@@ -2158,7 +1466,10 @@ export default function App() {
                           setLiveError(null);
                           try {
                             const response = await fetch("/api/latest-papers");
-                            const data = await response.json();
+                            if (!response.ok) {
+                              throw new Error(`Server status ${response.status}`);
+                            }
+                            const data = await safeParseJson(response);
                             if (data.papers) setLivePapers(data.papers);
                           } catch (err) {
                             setLiveError("Failed to sync sources. Try again!");
@@ -2172,6 +1483,190 @@ export default function App() {
                         <RefreshCw className={`h-3 w-3 ${loadingLive ? 'animate-spin' : ''}`} />
                         {loadingLive ? "Crawl Syncing..." : "Sync Feeds"}
                       </button>
+                    </div>
+
+                    {/* Control Dashboard: Real-time Filters & AI Scout */}
+                    <div className="flex flex-col gap-4 bg-[#F9F7F2]/60 p-4 sm:p-5 rounded-2xl border border-natural-border">
+                      {/* Search & Badges Box (Idea #1) */}
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col md:flex-row gap-3 items-center">
+                          <div className="relative w-full flex-1">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C8474]" />
+                            <input
+                              type="text"
+                              placeholder="Search current desk publications (Title, author, keywords...)"
+                              value={liveSearchQuery}
+                              onChange={(e) => setLiveSearchQuery(e.target.value)}
+                              className="w-full pl-10 pr-4 py-2 bg-white border border-[#E8E4D9] rounded-xl text-xs placeholder-[#8C8474] focus:outline-hidden focus:border-[#7C8464] font-medium"
+                            />
+                            {liveSearchQuery && (
+                              <button
+                                onClick={() => setLiveSearchQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] bg-[#F2EDE4] hover:bg-[#E8E4D9] px-2 py-0.5 rounded font-mono text-[#5A5A4A]"
+                              >
+                                CLEAR
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Quick Stats block */}
+                          <div className="text-[10px] font-mono bg-white border border-[#E8E4D9] px-3.5 py-2 rounded-xl text-[#5A5A4A] flex items-center gap-1.5 w-full md:w-auto shrink-0 justify-center">
+                            <Sliders className="h-3 w-3 text-[#7C8464]" />
+                            <span>
+                              Loaded: <strong className="font-bold">{livePapers.length}</strong> | Filtered: <strong className="font-bold">{getGroupedAndSortedPapers().reduce((acc, curr) => acc + curr.papers.length, 0)}</strong>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Interactive Topic Pill Badges */}
+                        <div className="flex flex-wrap gap-2 pt-1 border-t border-[#E8E4D9]/40">
+                          {["All", ...Array.from(new Set(livePapers.map(p => p.topic?.trim() || "General Science")))].filter(Boolean).map((topic, tIdx) => (
+                            <button
+                              key={tIdx}
+                              onClick={() => setSelectedTopic(topic)}
+                              className={`text-[10px] px-2.5 py-1 rounded-lg border font-bold select-none flex items-center gap-1 transition-all cursor-pointer ${
+                                selectedTopic === topic
+                                  ? "bg-[#7C8464] text-white border-[#7C8464] shadow-xs"
+                                  : "bg-white text-[#5A5A4A] border-[#E8E4D9]/80 hover:bg-[#F2EDE4]"
+                              }`}
+                            >
+                              <span>{topic}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* AI Search Grounding Scout Panel (Idea #2) */}
+                      <div className="mt-2 pt-4 border-t border-dashed border-[#E8E4D9]">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="bg-[#7C8464]/15 px-2.5 py-1 rounded-lg text-[#7C8464]">
+                              <Sparkles className="h-3.5 w-3.5" />
+                            </div>
+                            <div>
+                              <h5 className="font-serif font-bold text-xs text-[#2D2D24] leading-tight">AI Science Scout</h5>
+                              <span className="text-[9px] font-sans text-[#8C8474]">Connect to Google Search Grounding to mine real-time external papers & preprints</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-col sm:flex-row gap-2.5">
+                          <input
+                            type="text"
+                            placeholder="e.g., room temperature superconductor breakthroughs arXiv or space plasma thrusters nature"
+                            value={scoutQuery}
+                            onChange={(e) => setScoutQuery(e.target.value)}
+                            onKeyDown={async (e) => {
+                              if (e.key === "Enter") {
+                                await handleScoutGrounding();
+                              }
+                            }}
+                            className="flex-1 px-4 py-2 bg-white border border-[#E8E4D9] rounded-xl text-xs placeholder-[#8C8474] focus:outline-hidden focus:border-[#7C8464] font-medium"
+                          />
+                          <button
+                            onClick={handleScoutGrounding}
+                            disabled={scouting || !scoutQuery.trim()}
+                            className="px-4 py-2 bg-[#2D2D24] hover:bg-black text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer text-nowrap"
+                          >
+                            <Search className="h-3 w-3" />
+                            <span>{scouting ? "Scouting..." : "Scout Journals"}</span>
+                          </button>
+                        </div>
+
+                        {/* Scout Output Results */}
+                        <AnimatePresence>
+                          {(scouting || scoutError || scoutResults.length > 0) && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden mt-3"
+                            >
+                              <div className="bg-[#F2EDE4]/55 border border-[#E8E4D9] p-4 rounded-xl flex flex-col gap-3.5">
+                                {scouting && (
+                                  <div className="py-4 text-center flex flex-col items-center justify-center gap-2">
+                                    <RefreshCw className="h-5 w-5 text-[#7C8464] animate-spin" />
+                                    <span className="text-[10px] font-mono tracking-wide text-[#5A5A4A] animate-pulse">
+                                      MINING WORLDWIDE SCHOLAR PLACES AND EXTRACTING WEB GROUNDED PREPRINTS...
+                                    </span>
+                                  </div>
+                                )}
+
+                                {scoutError && !scouting && (
+                                  <div className="text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
+                                    ⚠️ {scoutError}
+                                  </div>
+                                )}
+
+                                {scoutResults.length > 0 && !scouting && (
+                                  <div className="flex flex-col gap-3">
+                                    <div className="flex items-center justify-between pb-1.5 border-b border-[#E8E4D9]">
+                                      <span className="text-[10px] font-mono font-bold text-[#7C8464] uppercase font-bold">Scouted Publications Discovered</span>
+                                      <button 
+                                        onClick={() => setScoutResults([])} 
+                                        className="text-[9px] font-mono text-[#8C8474] hover:text-[#2D2D24] uppercase font-bold"
+                                      >
+                                        Dismiss
+                                      </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                      {scoutResults.map((sp, spIdx) => (
+                                        <div key={spIdx} className="bg-white border border-[#E8E4D9] p-3 rounded-xl flex flex-col justify-between hover:border-[#7C8464]/50 transition-all text-left">
+                                          <div>
+                                            <div className="flex justify-between items-start gap-1 mb-1.5">
+                                              <span className="text-[8px] font-mono uppercase bg-[#7C8464]/10 text-[#7C8464] px-1.5 py-0.5 rounded font-black">
+                                                {sp.source_name || "ArXiv"}
+                                              </span>
+                                              <span className="text-[8px] font-mono text-[#8C8474]">
+                                                {sp.publish_date}
+                                              </span>
+                                            </div>
+
+                                            <h6 className="font-serif font-black text-xs text-[#2D2D24] line-clamp-2 leading-snug">
+                                              {sp.title}
+                                            </h6>
+                                            <p className="text-[9px] text-[#8C8474] font-mono truncate mt-0.5 mb-1.5">
+                                              {sp.authors}
+                                            </p>
+                                            <p className="text-[10px] text-[#5A5A4A] leading-relaxed line-clamp-3 italic">
+                                              "{sp.abstract}"
+                                            </p>
+                                          </div>
+
+                                          <div className="flex items-center justify-between border-t border-[#F1EDE4] pt-2 mt-2.5">
+                                            <a 
+                                              href={sp.original_url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-[9px] text-[#7C8464] font-semibold hover:underline flex items-center gap-0.5"
+                                            >
+                                              <span>Source Link</span>
+                                            </a>
+
+                                            <button
+                                              onClick={() => {
+                                                const exists = livePapers.some(p => p.original_url === sp.original_url);
+                                                if (!exists) {
+                                                  setLivePapers(prev => [sp, ...prev]);
+                                                }
+                                                alert(`"${sp.title}" is added to the session desk! Focus filters now to access.`);
+                                              }}
+                                              className="bg-[#7C8464] hover:bg-[#6A7153] text-[9px] text-white font-bold px-2.5 py-1 rounded-lg select-none cursor-pointer"
+                                            >
+                                              + Add
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
 
                     {/* Loader states for latest papers */}
@@ -2318,41 +1813,42 @@ export default function App() {
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  className="bg-white border border-[#E8E4D9] rounded-[32px] p-8 sm:p-12 shadow-sm relative overflow-hidden"
+                  className="bg-white border border-natural-border rounded-xl p-8 sm:p-12 shadow-xs relative overflow-hidden"
                 >
                   <div className="relative z-10 flex flex-col items-center gap-6 text-center">
-                    {/* Animated Solar System Spinner */}
-                    <div className="relative w-24 h-24">
-                      {/* Inner Ring */}
-                      <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#7C8464]/30 animate-spin"></div>
-                      {/* Middle Sparkle Ring */}
-                      <div className="absolute inset-2 rounded-full border-2 border-[#7C8464] border-t-transparent animate-[spin_3s_linear_infinite]"></div>
-                      {/* Outer Dot */}
-                      <div className="absolute -inset-1 rounded-full border border-[#8C8474] border-[#7C8464]/20 animate-[spin_1.5s_linear_infinite]"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Cpu className="h-8 w-8 text-[#7C8464] animate-pulse" />
-                      </div>
+                    {/* Elegant Minimalist Academic Pulse Loader */}
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full border-2 border-natural-border"></div>
+                      <motion.div 
+                        className="absolute inset-0 rounded-full border-2 border-natural-primary border-t-transparent"
+                        animate={{ rotate: 360 }}
+                        transition={{ rotation: { duration: 1.2, repeat: Infinity, ease: "linear" } }}
+                      ></motion.div>
+                      <Compass className="h-6 w-6 text-natural-primary" />
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest bg-[#F2EDE4] text-[#5A5A4A] border border-[#E8E4D9] px-3 py-1 rounded-full">
-                        AI DECONSTRUCTION LAB
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest bg-natural-highlight text-natural-primary border border-natural-border px-3 py-1 rounded">
+                        Lumina Scientific Synthesis
                       </span>
-                      <h3 className="text-xl font-serif font-bold text-[#2D2D24] mt-3">
-                        Deconstructing into {explanationLevel} Level...
+                      <h3 className="text-xl font-serif font-bold text-natural-title mt-3">
+                        Analyzing and Translating Cohort Materials...
                       </h3>
+                      <p className="text-xs text-natural-text mt-1">
+                        Active Level: <span className="font-bold">{explanationLevel} Context Standard</span>
+                      </p>
                     </div>
 
                     {/* Progress feedback block */}
-                    <div className="w-full max-w-sm bg-[#E8E4D9] h-2 rounded-full overflow-hidden">
+                    <div className="w-full max-w-sm bg-natural-highlight h-1.5 rounded-full overflow-hidden border border-natural-border">
                       <motion.div 
-                        className="bg-[#7C8464] h-full rounded-full"
-                        animate={{ width: ["10%", "35%", "65%", "90%", "10%", "50%", "95%"] }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                        className="bg-natural-primary h-full rounded-full"
+                        animate={{ width: ["15%", "45%", "75%", "92%", "92%"] }}
+                        transition={{ duration: 7, ease: "easeInOut" }}
                       />
                     </div>
 
-                    <p className="text-[#5A5A4A] italic text-sm max-w-sm mt-3 animate-pulse font-serif">
+                    <p className="text-natural-text italic text-sm max-w-sm mt-3 font-serif">
                       &ldquo;{loadingMessages[loadingPhase]}&rdquo;
                     </p>
                   </div>
@@ -2418,12 +1914,14 @@ export default function App() {
                             {renderCatchySimplifiedTitle()}
                             {renderExcitingHookSection()}
                             {renderActionsActionBar()}
+                            {renderReviewerArenaBanner()}
                           </div>
 
                           {/* Middle Column: The Core Text & Deep Details */}
                           <div className={splitScreenPaper ? "flex flex-col gap-3" : "lg:col-span-5 flex flex-col gap-3"}>
                             {renderBigIdeaGrid()}
                             {renderRealWorldImpact()}
+                            {renderGroundedEvidence()}
                           </div>
 
                           {/* Right Column: Jargon & Discovered Exploits */}
@@ -2458,21 +1956,6 @@ export default function App() {
                     >
                       <Network className="h-4 w-4 text-[#7C8464] group-hover:text-white transition-colors animate-pulse" />
                       <span>Explore Horizon Map</span>
-                    </button>
-
-                    {/* Floating Vertical Drawer Tab Activator on Absolute Right Edge */}
-                    <button
-                      onClick={() => setShowHorizonMap(true)}
-                      className="fixed right-0 top-[35%] -translate-y-1/2 z-40 bg-[#7C8464] hover:bg-[#6A7153] text-white pl-4.5 pr-3 py-5 rounded-l-2xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:pl-5.5 flex flex-col items-center gap-3 cursor-pointer select-none active:scale-95 border-l-0 border border-[#6A7153]/50 animate-fade-in"
-                      style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-                      id="horizon-map-floating-tab"
-                    >
-                      <div className="flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.25em] text-[#F9F7F2]">
-                        <div className="-rotate-90 py-1">
-                          <Network className="h-4 w-4 text-[#EAE6D6]" />
-                        </div>
-                        <span className="mt-1">Horizon Map</span>
-                      </div>
                     </button>
                   </div>
 
@@ -2552,6 +2035,11 @@ export default function App() {
                     </div>
                   </motion.div>
 
+                  {/* Reviewer #3 Interactive Challenge Banner */}
+                  <div className="my-6">
+                    {renderReviewerArenaBanner()}
+                  </div>
+
                   {/* Big Idea Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                     
@@ -2624,6 +2112,8 @@ export default function App() {
                     </div>
                   </div>
 
+                  {renderGroundedEvidence()}
+
                   {/* Thesis Validation & Dialectics Matrix */}
                   <div className="bg-white rounded-[32px] p-7 border border-[#E8E4D9] shadow-sm flex flex-col gap-5">
                     <div className="flex items-center justify-between border-b border-[#F2EDE4] pb-4">
@@ -2671,7 +2161,7 @@ export default function App() {
                           {/* Main 3 Column Grid */}
                           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
                             {(() => {
-                              const matrix = generateThesisValidationMatrix(result.simplified_title);
+                              const matrix = generateThesisValidationMatrix(result.simplified_title, result.year);
                               
                               return (
                                 <>
@@ -2975,7 +2465,14 @@ export default function App() {
                         Save to Study Log
                       </button>
                       <button 
-                        onClick={() => alert("Link copied to clipboard! Share with your biology class study group.")}
+                        onClick={() => setShowReviewChallenge(true)}
+                        className="px-5 py-2.5 bg-amber-950 hover:bg-amber-900 border border-amber-950 text-[#F9F7F2] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+                        Review Challenge
+                      </button>
+                      <button 
+                        onClick={() => alert("Link copied to clipboard!.")}
                         className="px-5 py-2.5 bg-[#F2EDE4] hover:bg-[#E8E4D9] rounded-full text-xs font-bold text-[#5A5A4A] transition-colors cursor-pointer flex items-center gap-1.5"
                       >
                         <Share2 className="h-3.5 w-3.5" />
@@ -3154,288 +2651,18 @@ export default function App() {
         
       </main>
 
-      {/* Horizon Map Slide-over Drawer Panel */}
+      {/* Dynamic D3 Citation Horizon & Paradigm Mapping Component */}
       <AnimatePresence>
         {showHorizonMap && result && (
-          <div className="fixed inset-0 z-50 overflow-hidden" id="horizon-map-drawer">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setShowHorizonMap(false);
-                setHoveredNode(null);
-              }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
-            />
-
-            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 220 }}
-                className="w-screen max-w-md animate-fade-in"
-              >
-                <div className="h-full flex flex-col bg-[#F9F7F2] shadow-2xl border-l border-[#E8E4D9] overflow-hidden">
-                  {/* Header */}
-                  <div className="px-6 py-5 bg-white border-b border-[#E8E4D9] flex items-center justify-between shadow-xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="bg-[#7C8464]/10 p-2 rounded-xl text-[#7C8464]">
-                        <Network className="h-5 w-5 opacity-90" />
-                      </div>
-                      <div>
-                        <h2 className="font-serif font-bold text-[#2D2D24] text-lg leading-tight">Citation Horizon Map</h2>
-                        <span className="text-[10px] font-mono font-bold text-[#8C8474] uppercase tracking-wider mt-0.5 block">
-                          Upstream Foundations &amp; Target Applications
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => {
-                        setShowHorizonMap(false);
-                        setHoveredNode(null);
-                      }}
-                      className="p-2 rounded-xl hover:bg-[#F2EDE4] text-[#8C8474] hover:text-[#2D2D24] transition-all cursor-pointer"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Body Container */}
-                  <div className="flex-1 overflow-y-auto flex flex-col gap-5 p-6">
-                    {/* Explanation */}
-                    <div className="bg-white/50 border border-white p-4 rounded-xl">
-                      <p className="text-xs text-[#5A5A4A] leading-relaxed">
-                        Lumina mapped out this study's theoretical lineage. 
-                        <strong> Left items</strong> are foundational references cited by this work. 
-                        <strong> Right items</strong> represent subsequent preprints or newer models extending this methodology.
-                      </p>
-                    </div>
-
-                    {/* SVG GRAPH BLOCK */}
-                    <div className="relative flex flex-col bg-white border border-[#E8E4D9] rounded-3xl p-4 gap-4 shadow-xs">
-                      <span className="text-[9px] font-mono font-bold tracking-widest text-[#8C8474] uppercase text-center block mb-1">
-                        Interactive Academic Pedigree
-                      </span>
-
-                      {/* SVG Canvas wrapper */}
-                      <div className="w-full h-[250px] relative flex items-center justify-center overflow-hidden">
-                        {(() => {
-                          const graph = generateCitationGraph(result?.simplified_title);
-                          const activeNodeShowcase = selectedCitationNode || graph.nodes.find(n => n.type === "center");
-
-                          return (
-                            <svg className="w-full h-full" viewBox="0 0 350 280">
-                              {/* Connector Lines */}
-                              {graph.links.map((link, idx) => {
-                                const src = graph.nodes.find(n => n.id === link.source);
-                                const tgt = graph.nodes.find(n => n.id === link.target);
-                                if (!src || !tgt) return null;
-
-                                const isLineActive = hoveredNode?.id === src.id || hoveredNode?.id === tgt.id || activeNodeShowcase?.id === src.id || activeNodeShowcase?.id === tgt.id;
-
-                                return (
-                                  <line
-                                    key={idx}
-                                    x1={src.x}
-                                    y1={src.y}
-                                    x2={tgt.x}
-                                    y2={tgt.y}
-                                    stroke={isLineActive ? "#7C8464" : "#D6D0C2"}
-                                    strokeWidth={isLineActive ? 2.5 : 1.5}
-                                    strokeDasharray={link.isPreprint ? "4,4" : undefined}
-                                    className="transition-all duration-300 pointer-events-none"
-                                  />
-                                );
-                              })}
-
-                              {/* Nodes Rendering */}
-                              {graph.nodes.map((node) => {
-                                const isCenter = node.type === "center";
-                                const isNodeHovered = hoveredNode?.id === node.id;
-                                const isNodeSelected = activeNodeShowcase?.id === node.id;
-
-                                return (
-                                  <g
-                                    key={node.id}
-                                    className="cursor-pointer"
-                                    onMouseEnter={() => setHoveredNode(node)}
-                                    onMouseLeave={() => setHoveredNode(null)}
-                                    onClick={() => setSelectedCitationNode(node)}
-                                  >
-                                    {/* Pulse circle for Center node */}
-                                    {isCenter && (
-                                      <circle
-                                        cx={node.x}
-                                        cy={node.y}
-                                        r={24}
-                                        fill="none"
-                                        stroke="#7C8464"
-                                        strokeWidth={1.5}
-                                        className="animate-ping opacity-15"
-                                        style={{ transformOrigin: `${node.x}px ${node.y}px` }}
-                                      />
-                                    )}
-
-                                    {/* Trigger Circle */}
-                                    <circle
-                                      cx={node.x}
-                                      cy={node.y}
-                                      r={isCenter ? 16 : 11}
-                                      fill={isCenter ? "#7C8464" : isNodeSelected ? "#F2EDE4" : "#FFFFFF"}
-                                      stroke={isCenter ? "#6A7153" : isNodeSelected ? "#7C8464" : isNodeHovered ? "#7C8464" : "#D6D0C2"}
-                                      strokeWidth={isCenter ? 3.5 : isNodeSelected ? 3.5 : isNodeHovered ? 2.5 : 1.5}
-                                      className="transition-all duration-200"
-                                      style={{ transformOrigin: `${node.x}px ${node.y}px` }}
-                                    />
-
-                                    {/* Inner dot inside standard nodes */}
-                                    {!isCenter && (
-                                      <circle
-                                        cx={node.x}
-                                        cy={node.y}
-                                        r={3.5}
-                                        fill={isNodeSelected ? "#7C8464" : "#8C8474"}
-                                        className="pointer-events-none"
-                                      />
-                                    )}
-
-                                    {/* Inner white dot for Center core */}
-                                    {isCenter && (
-                                      <circle
-                                        cx={node.x}
-                                        cy={node.y}
-                                        r={4}
-                                        fill="#FFFFFF"
-                                        className="pointer-events-none"
-                                      />
-                                    )}
-
-                                    {/* Label Underneath Node */}
-                                    <text
-                                      x={node.x}
-                                      y={node.y + (isCenter ? 32 : 26)}
-                                      textAnchor="middle"
-                                      className={`text-[9.5px] font-mono leading-none tracking-tight pointer-events-none transition-all duration-200 ${
-                                        isCenter
-                                          ? "font-bold text-[#2D2D24]"
-                                          : isNodeSelected || isNodeHovered
-                                          ? "font-bold text-[#7C8464]"
-                                          : "text-[#8C8474]"
-                                      }`}
-                                    >
-                                      {node.shortTitle}
-                                    </text>
-                                  </g>
-                                );
-                              })}
-                            </svg>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Floating Micro-Hover Tooltip Overlay inside Graph */}
-                      <AnimatePresence>
-                        {hoveredNode && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 5 }}
-                            className="bg-[#2D2D24] text-white text-[11px] p-3 rounded-xl shadow-lg border border-[#434338] pointer-events-none z-10 absolute left-4 right-4 top-[50%] -translate-y-1/2"
-                          >
-                            <div className="flex justify-between items-start gap-2">
-                              <span className="font-serif font-bold leading-tight block text-white text-xs">
-                                {hoveredNode.title}
-                              </span>
-                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold whitespace-nowrap ${
-                                hoveredNode.isPreprint ? "bg-[#B4A086] text-[#2D2D24]" : "bg-[#7C8464] text-white"
-                              }`}>
-                                {hoveredNode.isPreprint ? "PREPRINT" : "PEER-REVIEW"}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-[#A69F8B] mt-1.5 font-mono">
-                              By {hoveredNode.authors} ({hoveredNode.year})
-                            </p>
-                            <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[9px] text-[#A69F8B] font-mono">
-                              <span>🔗 CONNECTION: {hoveredNode.type.toUpperCase()}</span>
-                              <span>🔥 CITATIONS: {hoveredNode.citations}</span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* CLICK PREVIEW CARD AT BOTTOM */}
-                    {(() => {
-                      const graph = generateCitationGraph(result?.simplified_title);
-                      const activeNode = selectedCitationNode || graph.nodes.find(n => n.type === "center");
-                      const isCurrentCenterNode = activeNode.type === "center";
-
-                      return (
-                        <div className="flex flex-col gap-4 mt-1">
-                          <div className="bg-white border border-[#E8E4D9] rounded-2xl p-5 flex flex-col gap-3.5 shadow-xs relative overflow-hidden">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#7C8464] bg-[#F2EDE4] px-2.5 py-1 rounded-md">
-                                {activeNode.type === "upstream" ? "Foundational Ref" : activeNode.type === "downstream" ? "Derived Adaptation" : "Loaded Study"}
-                              </span>
-                              <span className="text-[10px] font-mono text-[#8C8474]">
-                                Citations: <strong>{activeNode.citations}</strong>
-                              </span>
-                            </div>
-
-                            <div>
-                              <h3 className="font-serif font-bold text-[#2D2D24] text-sm sm:text-base leading-snug">
-                                {activeNode.title}
-                              </h3>
-                              <p className="text-xs text-[#8C8474] font-mono mt-1">
-                                By {activeNode.authors} ({activeNode.year})
-                              </p>
-                            </div>
-
-                            <p className="text-[12px] text-[#5A5A4A] leading-relaxed italic bg-[#F9F7F2] p-3.5 rounded-xl border border-[#E8E4D9]/40 border-l-2 border-l-[#7C8464]/80">
-                              &ldquo;{activeNode.summary}&rdquo;
-                            </p>
-
-                            <div className="pt-1.5 border-t border-[#F2EDE4]">
-                              <span className="text-[9.5px] font-mono font-bold uppercase text-[#8C8474] block mb-1">
-                                Abstract Context:
-                              </span>
-                              <p className="text-[11px] text-[#5A5A4A] leading-relaxed line-clamp-3">
-                                {activeNode.abstract}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* ACTION BUTTON */}
-                          {isCurrentCenterNode ? (
-                            <div className="w-full py-3 bg-[#E8E4D9]/50 text-center text-xs font-bold text-[#5A5A4A] rounded-xl border border-dashed border-[#D6D0C2] select-none font-mono">
-                              ✓ Currently Active Document in View
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleLoadNodeAsMain(activeNode)}
-                              className="w-full bg-[#7C8464] hover:bg-[#6A7153] text-white py-3.5 px-4 rounded-xl text-xs font-bold transition-all shadow cursor-pointer active:scale-98 flex items-center justify-center gap-2"
-                            >
-                              <BookOpen className="h-4 w-4" />
-                              Load as Main Article
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Footer metadata alignment */}
-                  <div className="p-4 bg-white border-t border-[#E8E4D9] text-center text-[10px] tracking-wider uppercase font-mono text-[#8C8474]">
-                    Lumina Research Horizon Mapping Engine
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
+          <CitationHorizonGraph
+            activePaper={result}
+            onClose={() => setShowHorizonMap(false)}
+            onLoadAsMainArticle={async (paperCandidate) => {
+              setShowHorizonMap(false);
+              await handleSelectLivePaper(paperCandidate);
+            }}
+            explanationLevel={explanationLevel}
+          />
         )}
       </AnimatePresence>
 
@@ -3581,14 +2808,25 @@ export default function App() {
 
                   {/* Drawer Footer */}
                   {readingList.length > 0 && (
-                    <div className="p-4 bg-white border-t border-[#E8E4D9] flex gap-2">
+                    <div className="p-4 bg-white border-t border-[#E8E4D9] flex flex-col gap-2">
+                      <button
+                        onClick={() => {
+                          setShowReadingList(false);
+                          setCompilingDossier(true);
+                        }}
+                        className="w-full text-center text-xs bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 select-none"
+                      >
+                        <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                        <span>Compile Study Dossier</span>
+                      </button>
+                      
                       <button
                         onClick={() => {
                           if (confirm("Are you sure you want to clear your entire Reading List?")) {
                             setReadingList([]);
                           }
                         }}
-                        className="w-full text-center text-xs text-[#8C8474] hover:text-red-600 font-bold py-2.5 transition-colors cursor-pointer hover:bg-red-50/20 rounded-xl"
+                        className="w-full text-center text-[10px] text-[#8C8474] hover:text-red-600 font-bold py-1.5 transition-colors cursor-pointer hover:bg-red-50/20 rounded-lg"
                       >
                         Clear All Items
                       </button>
@@ -3602,690 +2840,368 @@ export default function App() {
       </AnimatePresence>
 
       {/* Lumina Fusion Synthesis Lab Fullscreen Overlay */}
-      <AnimatePresence>
-        {showFusionLab && (
-          <div className="fixed inset-0 z-50 bg-[#F9F7F2] overflow-y-auto flex flex-col antialiased">
-            {/* Lab Top Navbar */}
-            <nav className="sticky top-0 bg-[#FDFBF7]/90 backdrop-blur-md px-6 py-5 sm:px-10 border-b border-[#E8E4D9] flex justify-between items-center z-20">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#7C8464] text-white p-2.5 rounded-xl">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-serif font-bold text-[#2D2D24] flex items-center gap-2">
-                    Lumina Fusion <span className="text-[10px] bg-[#7C8464]/10 text-[#7C8464] border border-[#7C8464]/20 px-2 py-0.5 rounded-full font-mono uppercase font-black font-semibold">Experimental Lab</span>
-                  </h1>
-                  <p className="text-[11px] sm:text-xs text-[#8C8474] font-medium hidden sm:block">
-                    Synthesize two literature papers into a unified theoretical hypothesis draft
-                  </p>
-                </div>
-              </div>
+      <FusionLab
+        showFusionLab={showFusionLab}
+        setShowFusionLab={setShowFusionLab}
+        fusionPaperA={fusionPaperA}
+        setFusionPaperA={setFusionPaperA}
+        fusionPaperB={fusionPaperB}
+        setFusionPaperB={setFusionPaperB}
+        livePapers={livePapers}
+      />
 
-              <div className="flex items-center gap-3">
-                {/* Clear Session Button */}
-                {(fusionPaperA || fusionPaperB || fusionResult) && (
+      {/* Lumina Custom Science Compiler / Dossier Sheet Overlay */}
+      <SynthesisDossier
+        compilingDossier={compilingDossier}
+        setCompilingDossier={setCompilingDossier}
+        readingList={readingList}
+        setReadingList={setReadingList}
+      />
+
+      {/* Lumina Custom Markdown to JSX Renderer */}
+      {false && (() => {
+        const dossierLevel = "High School";
+        const dossierResult = "";
+        const generatingDossier = false;
+        const handleCompileDossier = (...args: any[]) => {};
+        const readingList: any[] = [];
+        const setReadingList = (...args: any[]) => {};
+        const setCompilingDossier = (...args: any[]) => {};
+        const compilingDossier = false;
+        const setDossierResult = (...args: any[]) => {};
+        const setDossierError = (...args: any[]) => {};
+        const setDossierLevel = (...args: any[]) => {};
+        const setDossierCopied = (...args: any[]) => {};
+        const dossierCopied = false;
+        const dossierError = null as any;
+
+        const renderMarkdownToJSX = (markdownText: string) => {
+          if (!markdownText) return null;
+          const lines = markdownText.split("\n");
+          return lines.map((line, idx) => {
+            const text = line.trim();
+            if (!text) return <div key={idx} className="h-2" />;
+            
+            // Bold mapping inside text helper
+            const parseInlineFormatting = (rawLine: string) => {
+              const boldRegex = /\*\*(.*?)\*\//g; // Corrected slightly or replaced to custom fallback
+              const parts = [];
+              let lastIndex = 0;
+              const matches = Array.from(rawLine.matchAll(/\*\*(.*?)\*\*/g));
+              if (matches.length === 0) return rawLine;
+
+              matches.forEach((m, matchIdx) => {
+                const matchIndex = m.index ?? 0;
+                if (matchIndex > lastIndex) {
+                  parts.push(rawLine.substring(lastIndex, matchIndex));
+                }
+                parts.push(<strong key={matchIdx} className="font-extrabold text-amber-950 font-serif">{m[1]}</strong>);
+                lastIndex = matchIndex + m[0].length;
+              });
+
+              if (lastIndex < rawLine.length) {
+                parts.push(rawLine.substring(lastIndex));
+              }
+              return parts;
+            };
+
+            // Headers
+            if (text.startsWith("###")) {
+              return (
+                <h4 key={idx} className="font-serif font-bold text-xs sm:text-sm text-[#2D2D24] mt-4 mb-2 border-b border-[#E8E4D9]/50 pb-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#7C8464]" />
+                  <span>{parseInlineFormatting(text.replace("###", "").trim())}</span>
+                </h4>
+              );
+            }
+            if (text.startsWith("##")) {
+              return (
+                <h3 key={idx} className="font-serif font-black text-xs sm:text-sm text-amber-950 uppercase tracking-widest mt-6 mb-3 flex items-center gap-2 border-l-2 border-amber-950 pl-2 py-0.5">
+                  <span>{parseInlineFormatting(text.replace("##", "").trim())}</span>
+                </h3>
+              );
+            }
+            if (text.startsWith("#")) {
+              return (
+                <h2 key={idx} className="font-serif font-black text-sm sm:text-base text-gray-900 border-l-4 border-amber-950 pl-3 py-1 my-6 bg-amber-50/45 rounded-r-lg">
+                  <span>{parseInlineFormatting(text.replace("#", "").trim())}</span>
+                </h2>
+              );
+            }
+            
+            // Bullet points
+            if (text.startsWith("-") || text.startsWith("*")) {
+              const content = text.replace(/^[-*]\s*/, "");
+              return (
+                <div key={idx} className="flex gap-2 items-start pl-4 my-1.5 text-xs text-[#5A5A4A] leading-relaxed">
+                  <span className="text-[#7C8464] select-none mt-1">•</span>
+                  <p className="flex-1">{parseInlineFormatting(content)}</p>
+                </div>
+              );
+            }
+
+            // Numbered lists
+            if (/^\d+\s*\.\s/.test(text)) {
+              const content = text.replace(/^\d+\s*\.\s*/, "");
+              const numMatch = text.match(/^(\d+)\s*\.\s*/);
+              const num = numMatch ? numMatch[1] : "1";
+              return (
+                <div key={idx} className="flex gap-2 items-start pl-4 my-1.5 text-xs text-[#5A5A4A] leading-relaxed">
+                  <span className="text-amber-950 font-mono font-bold text-[10px] select-none mt-0.5">{num}.</span>
+                  <p className="flex-1">{parseInlineFormatting(content)}</p>
+                </div>
+              );
+            }
+            
+            // Default paragraphs
+            return (
+              <p key={idx} className="text-xs text-[#5A5A4A] leading-relaxed my-2">
+                {parseInlineFormatting(text)}
+              </p>
+            );
+          });
+        };
+
+        return (
+          <AnimatePresence>
+            {compilingDossier && (
+              <div className="fixed inset-0 z-50 bg-[#F9F7F2]/95 backdrop-blur-md overflow-y-auto flex flex-col antialiased">
+                {/* Top Navigation */}
+                <div className="px-6 py-4 border-b border-[#E8E4D9] bg-white flex justify-between items-center sticky top-0 z-10 shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-amber-950 p-2 rounded-xl text-white">
+                      <BookMarked className="h-4 w-4 text-amber-300" />
+                    </div>
+                    <div>
+                      <h2 className="font-serif font-black text-sm sm:text-base text-natural-title leading-none">
+                        Lumina Custom Science Compiler
+                      </h2>
+                      <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-[#8C8474] mt-1 block">
+                        Composite Multi-Paper Academic Dossier Generator
+                      </span>
+                    </div>
+                  </div>
+
                   <button
                     onClick={() => {
-                      if (confirm("Reset current synthesis workbench?")) {
-                        setFusionPaperA(null);
-                        setFusionPaperB(null);
-                        setFusionResult(null);
-                        setFusionError(null);
-                      }
+                      setCompilingDossier(false);
+                      setDossierResult("");
+                      setDossierError(null);
                     }}
-                    className="text-[11px] font-mono font-bold tracking-wider text-[#8C8474] uppercase px-3 py-1.5 hover:text-red-600 hover:bg-red-50/20 rounded-lg transition-colors cursor-pointer"
+                    className="p-2 rounded-xl hover:bg-[#F2EDE4] text-[#8C8474] hover:text-[#2D2D24] transition-all cursor-pointer"
                   >
-                    Reset Lab
+                    <X className="h-5 w-5" />
                   </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    setShowFusionLab(false);
-                    setSelectingSlot(null);
-                  }}
-                  className="p-2 sm:p-2.5 rounded-xl hover:bg-[#F2EDE4]/60 text-[#8C8474] hover:text-[#2D2D24] transition-all cursor-pointer border border-[#E8E4D9] bg-white shadow-2xs"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </nav>
-
-            {/* Main Workbench Body */}
-            <div className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-10 flex flex-col gap-10">
-              
-              {/* Paper Selection Widgets - Side-by-Side Dual Slots with Connective Matrix */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-4 bg-[#F2EDE4]/40 p-6 sm:p-8 rounded-[36px] border border-[#E8E4D9]">
-                
-                {/* Paper A Slot */}
-                <div className="lg:col-span-5 h-full flex flex-col">
-                  <div className="text-[10px] font-mono tracking-wider uppercase text-[#8C8474] font-bold mb-2 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#7C8464]" />
-                    Slot Alpha (Paper A)
-                  </div>
-                  
-                  {fusionPaperA ? (
-                    <div className="flex-1 bg-white border border-[#E8E4D9] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#7C8464]/40 transition-colors">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[9px] font-mono uppercase bg-[#2D2D24] text-white px-2 py-0.5 rounded font-black">
-                            {fusionPaperA.source_name}
-                          </span>
-                          <span className="text-[10px] font-mono text-[#8C8474] font-semibold truncate">
-                            {fusionPaperA.authors}
-                          </span>
-                        </div>
-                        <h3 className="font-serif font-bold text-[#1E2019] text-sm sm:text-base leading-snug line-clamp-3 mb-2">
-                          {fusionPaperA.title}
-                        </h3>
-                        <p className="text-[11px] text-[#5A5A4A] leading-relaxed line-clamp-4">
-                          {fusionPaperA.abstract}
-                        </p>
-                      </div>
-                      
-                      <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-[#F2EDE4]">
-                        <button
-                          onClick={() => setSelectingSlot("A")}
-                          className="text-[10px] font-bold text-[#7C8464] bg-[#7C8464]/10 hover:bg-[#7C8464]/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          Modify Paper A
-                        </button>
-                        <button
-                          onClick={() => setFusionPaperA(null)}
-                          className="text-[10px] font-mono text-red-600 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors cursor-pointer font-bold"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      onClick={() => setSelectingSlot("A")}
-                      className="flex-1 min-h-[180px] bg-white border-2 border-dashed border-[#E8E4D9] hover:border-[#7C8464]/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:bg-[#FDFBF7]"
-                    >
-                      <div className="bg-[#E8E4D9]/40 p-4 rounded-full text-[#8C8474] mb-3">
-                        <Plus className="h-6 w-6 stroke-[3]" />
-                      </div>
-                      <p className="font-serif font-bold text-xs text-[#2D2D24]">Inject Core Paper A</p>
-                      <p className="text-[10px] text-[#8C8474] mt-1 max-w-[200px] leading-normal">
-                        Select a publication from the synced live feeds or standard corpus
-                      </p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Central Connective Matrix Node */}
-                <div className="lg:col-span-2 flex flex-col items-center justify-center relative">
-                  
-                  {/* Central Node Visual */}
-                  <div className="flex flex-col items-center relative z-10 py-4 lg:py-0">
-                    
-                    {/* Pulsing Outer Ring */}
-                    <div className="relative flex items-center justify-center">
-                      <div className={`absolute w-14 h-14 rounded-full border border-[#7C8464]/20 ${fusionLoading ? "animate-ping stroke-[2] bg-[#7C8464]/5" : "animate-pulse"}`} />
-                      <div className={`absolute w-20 h-20 rounded-full border border-dashed border-[#7C8464]/15 ${fusionLoading ? "animate-spin" : ""}`} />
-                      
-                      {/* Interactive Center Node */}
+                {/* Split Workspace */}
+                <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+                  {/* Left Configuration Panel */}
+                  <div className="lg:col-span-5 flex flex-col gap-5">
+                    <div className="bg-white border border-natural-border rounded-2xl p-5 shadow-xs flex flex-col gap-4">
+                      <div className="border-b border-[#F2EDE4] pb-2 text-left">
+                        <h3 className="font-serif font-bold text-xs sm:text-sm text-[#2D2D24]">Compiler Settings</h3>
+                        <p className="text-[10px] text-[#8C8474]">Select academic depth and explore resources</p>
+                      </div>
+
+                      {/* Level selector */}
+                      <div className="flex flex-col gap-2 text-left">
+                        <label className="text-[10px] font-mono font-bold text-[#5A5A4A] uppercase">Target Reading Complexity</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                          {(["Middle School", "High School", "Undergrad", "Graduate", "PhD"] as ExplanationLevel[]).map((lvl) => (
+                            <button
+                              key={lvl}
+                              onClick={() => setDossierLevel(lvl)}
+                              className={`text-[9px] py-2 rounded-lg border font-bold text-center transition-all cursor-pointer select-none ${
+                                dossierLevel === lvl
+                                  ? "bg-amber-950 text-white border-amber-950"
+                                  : "bg-white text-[#5A5A4A] border-[#E8E4D9] hover:bg-[#F2EDE4]"
+                              }`}
+                            >
+                              {lvl === "Middle School" && "Middle"}
+                              {lvl === "High School" && "High"}
+                              {lvl === "Undergrad" && "College"}
+                              {lvl === "Graduate" && "Graduate"}
+                              {lvl === "PhD" && "PhD"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Action Sync */}
                       <button
-                        onClick={handleSynthesize}
-                        disabled={!fusionPaperA || !fusionPaperB || fusionLoading}
-                        className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all z-10 shadow-xs cursor-pointer select-none active:scale-90 ${
-                          fusionLoading
-                            ? "bg-[#D97706] text-white border-[#D97706] animate-pulse"
-                            : (fusionPaperA && fusionPaperB)
-                            ? "bg-[#7C8464] text-white border-[#7C8464] hover:bg-[#6A7153] hover:scale-105"
-                            : "bg-[#E8E4D9]/50 text-[#8C8474] border-[#E8E4D9] cursor-not-allowed"
-                        }`}
-                        title="Synthesize New Paradigm"
+                        onClick={handleCompileDossier}
+                        disabled={generatingDossier || readingList.length === 0}
+                        className="w-full bg-amber-950 hover:bg-amber-900 font-bold py-3 text-white rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer select-none disabled:opacity-50"
                       >
-                        <GitMerge className="h-5 w-5 rotate-90 animate-pulse" />
+                        <Sparkles className="h-4 w-4 text-amber-300" />
+                        <span>{generatingDossier ? "Synthesizing Science Dossier..." : "Generate Custom Study Dossier"}</span>
                       </button>
                     </div>
 
-                    <span className="text-[9px] font-mono tracking-widest font-black uppercase text-[#8C8474] mt-3 bg-[#F2EDE4] px-2 py-0.5 rounded-full select-none">
-                      {fusionLoading ? "FUSING" : "SYNAPSE"}
-                    </span>
-                  </div>
-
-                  {/* Horizontal Connection Line overlay for large displays */}
-                  <div className="hidden lg:block absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#E8E4D9] to-transparent z-0 pointer-events-none" />
-                </div>
-
-                {/* Paper B Slot */}
-                <div className="lg:col-span-5 h-full flex flex-col">
-                  <div className="text-[10px] font-mono tracking-wider uppercase text-[#8C8474] font-bold mb-2 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#7C8464]" />
-                    Slot Beta (Paper B)
-                  </div>
-
-                  {fusionPaperB ? (
-                    <div className="flex-1 bg-white border border-[#E8E4D9] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#7C8464]/40 transition-colors">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[9px] font-mono uppercase bg-[#2D2D24] text-white px-2 py-0.5 rounded font-black">
-                            {fusionPaperB.source_name}
-                          </span>
-                          <span className="text-[10px] font-mono text-[#8C8474] font-semibold truncate">
-                            {fusionPaperB.authors}
-                          </span>
-                        </div>
-                        <h3 className="font-serif font-bold text-[#1E2019] text-sm sm:text-base leading-snug line-clamp-3 mb-2">
-                          {fusionPaperB.title}
-                        </h3>
-                        <p className="text-[11px] text-[#5A5A4A] leading-relaxed line-clamp-4">
-                          {fusionPaperB.abstract}
-                        </p>
-                      </div>
-
-                      <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-[#F2EDE4]">
-                        <button
-                          onClick={() => setSelectingSlot("B")}
-                          className="text-[10px] font-bold text-[#7C8464] bg-[#7C8464]/10 hover:bg-[#7C8464]/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          Modify Paper B
-                        </button>
-                        <button
-                          onClick={() => setFusionPaperB(null)}
-                          className="text-[10px] font-mono text-red-600 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors cursor-pointer font-bold"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div 
-                      onClick={() => setSelectingSlot("B")}
-                      className="flex-1 min-h-[180px] bg-white border-2 border-dashed border-[#E8E4D9] hover:border-[#7C8464]/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:bg-[#FDFBF7]"
-                    >
-                      <div className="bg-[#E8E4D9]/40 p-4 rounded-full text-[#8C8474] mb-3">
-                        <Plus className="h-6 w-6 stroke-[3]" />
-                      </div>
-                      <p className="font-serif font-bold text-xs text-[#2D2D24]">Inject Core Paper B</p>
-                      <p className="text-[10px] text-[#8C8474] mt-1 max-w-[200px] leading-normal">
-                        Select a publication from the synced live feeds or standard corpus
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-              {/* Action synthesis zone */}
-              <div className="flex flex-col items-center gap-4">
-                <button
-                  onClick={handleSynthesize}
-                  disabled={!fusionPaperA || !fusionPaperB || fusionLoading}
-                  className={`px-8 py-4 rounded-2xl font-serif font-bold text-sm tracking-wide transition-all shadow-md select-none cursor-pointer flex items-center justify-center gap-2 ${
-                    (!fusionPaperA || !fusionPaperB || fusionLoading)
-                      ? "bg-[#E8E4D9] text-[#8C8474] border border-[#E8E4D9] cursor-not-allowed shadow-none"
-                      : "bg-[#7C8464] hover:bg-[#6A7153] text-white border border-[#7C8464] active:scale-95"
-                  }`}
-                >
-                  <Sparkles className={`h-4.5 w-4.5 ${fusionLoading ? "animate-spin" : ""}`} />
-                  <span>Synthesize New Paradigm</span>
-                </button>
-                <p className="text-[10px] font-mono text-[#8C8474] text-center uppercase tracking-wider">
-                  Uses deep cross-pollination logic to generate a unified theoretical manuscript
-                </p>
-              </div>
-
-              {/* Loading State Overlay Section */}
-              {fusionLoading && (
-                <div className="bg-white border border-[#E8E4D9] rounded-[32px] p-10 flex flex-col items-center justify-center text-center shadow-xs py-14 max-w-2xl mx-auto w-full">
-                  <div className="relative w-16 h-16 mb-6">
-                    <div className="absolute inset-0 rounded-full border-4 border-t-[#D97706] border-[#7C8464]/10 animate-spin" />
-                    <div className="absolute inset-2 rounded-full border-4 border-[#7C8464]/20 animate-pulse" />
-                  </div>
-                  <h3 className="font-serif font-bold text-[#1E2019] text-base mb-1">Synthesizing Literature Paradigms...</h3>
-                  <p className="text-xs text-[#8C8474] font-mono animate-pulse uppercase tracking-wider">{fusionStatusText}</p>
-                </div>
-              )}
-
-              {/* Error Box */}
-              {fusionError && (
-                <div className="bg-red-50/50 border border-red-200 text-red-800 p-5 rounded-2xl max-w-2xl mx-auto w-full text-xs leading-relaxed flex items-center gap-3">
-                  <span className="text-base select-none">⚠️</span>
-                  <div>
-                    <span className="font-bold block mb-0.5">Synthesis Pipeline Failure</span>
-                    {fusionError}
-                  </div>
-                </div>
-              )}
-
-              {/* Synthesis Output: Structured Book-Style Manuscript Draft */}
-              {fusionResult && !fusionLoading && !fusionError && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-[#FDFBF7] border border-[#E8E4D9] p-6 sm:p-12 max-w-4xl w-full mx-auto rounded-[32px] font-sans text-left shadow-sm flex flex-col gap-8 relative"
-                >
-                  
-                  {/* Decorative Header */}
-                  <div className="border-b border-[#E8E4D9] pb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <span className="inline-flex items-center gap-1.5 bg-[#7C8464]/10 text-[#7C8464] border border-[#7C8464]/20 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md uppercase tracking-wider select-none mb-3">
-                        <Sparkle className="h-3 w-3 text-[#7C8464]" />
-                        Synthesized Academic Perspectivism
-                      </span>
-                      <h2 className="font-serif font-bold text-[#2D2D24] text-xl sm:text-2xl lg:text-3xl tracking-tight leading-tight mb-2">
-                        {fusionResult.title}
-                      </h2>
-                      <div className="flex flex-col gap-1 text-[11px] font-mono text-[#8C8474]">
+                    {/* Queue of Curated Articles */}
+                    <div className="bg-white border border-natural-border rounded-2xl p-5 shadow-xs flex flex-col gap-3 flex-1 min-h-[250px] lg:min-h-0 text-left">
+                      <div className="flex items-center justify-between border-b border-[#F2EDE4] pb-2">
                         <div>
-                          <strong>Lead Synthesizer:</strong> Lumina Fusion Engine (G-3.5)
+                          <h3 className="font-serif font-bold text-xs sm:text-sm text-[#2D2D24]">Curated Papers Bundle</h3>
+                          <p className="text-[10px] text-[#8C8474]">Articles currently selected for compilation</p>
                         </div>
-                        <div>
-                          <strong>Pre-existing Axioms:</strong> 
-                          <span className="text-[#5A5A4A] italic ml-1">
-                            A: "{fusionPaperA?.title}" &amp; B: "{fusionPaperB?.title}"
-                          </span>
-                        </div>
+                        <span className="text-[10px] font-mono bg-amber-950/10 text-amber-950 px-2 py-0.5 rounded-full font-bold font-bold">
+                          {readingList.length} Selected
+                        </span>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 max-h-[300px] lg:max-h-[450px]">
+                        {readingList.map((paper, rpIdx) => (
+                          <div key={rpIdx} className="bg-[#F9F7F2]/50 border border-[#E8E4D9] p-3 rounded-xl flex justify-between items-start gap-3 text-left">
+                            <div className="flex-1 text-left">
+                              <span className="text-[8px] font-mono uppercase bg-amber-950/20 text-amber-950 px-1 py-0.5 rounded font-black font-black">
+                                {paper.source_name}
+                              </span>
+                              <h4 className="font-serif font-bold text-xs text-[#2D2D24] leading-snug mt-1">
+                                {paper.title}
+                              </h4>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setReadingList(prev => prev.filter(item => item.original_url !== paper.original_url));
+                              }}
+                              className="hover:bg-red-50 p-1.5 rounded-lg text-red-600 transition-colors shrink-0 cursor-pointer"
+                              title="Exempt from compile"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Accordion List Container */}
-                  <div className="flex flex-col gap-4">
-                    
-                    {/* Abstract Accordion */}
-                    <div className="border border-[#E8E4D9] rounded-2xl overflow-hidden bg-white shadow-3xs">
-                      <button
-                        onClick={() => setExpandedFusionSection(expandedFusionSection === "abstract" ? null : "abstract")}
-                        className="w-full px-5 py-4 flex justify-between items-center bg-[#FDFBF7] hover:bg-[#F9F7F2]/40 text-[#2D2D24] border-b border-[#E8E4D9] text-left transition-all"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-serif text-[#7C8464] font-black text-xs md:text-sm">01</span>
-                          <span className="font-serif font-bold text-sm md:text-base">Synthesized Manuscript Abstract</span>
-                        </div>
-                        <ChevronRight className={`h-4.5 w-4.5 text-[#8C8474] transition-transform duration-300 ${expandedFusionSection === "abstract" ? "rotate-90 text-[#7C8464]" : ""}`} />
-                      </button>
-
-                      <AnimatePresence initial={false}>
-                        {expandedFusionSection === "abstract" && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-6 bg-white prose prose-neutral max-w-none text-xs sm:text-sm text-[#434338] leading-relaxed">
-                              {renderSynthesizedTextWithBadges(fusionResult.abstract)}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Pathway / Thesis Accordion */}
-                    <div className="border border-[#E8E4D9] rounded-2xl overflow-hidden bg-white shadow-3xs">
-                      <button
-                        onClick={() => setExpandedFusionSection(expandedFusionSection === "thesis" ? null : "thesis")}
-                        className="w-full px-5 py-4 flex justify-between items-center bg-[#FDFBF7] hover:bg-[#F9F7F2]/40 text-[#2D2D24] border-b border-[#E8E4D9] text-left transition-all"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-serif text-[#7C8464] font-black text-xs md:text-sm">02</span>
-                          <span className="font-serif font-bold text-sm md:text-base">Novel Cross-Pollination Thesis</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-black uppercase tracking-wider select-none ${
-                            fusionResult.pathway === "Methodological Transfer"
-                              ? "bg-[#7C8464]/10 text-[#7C8464] border border-[#7C8464]/20"
-                              : "bg-[#2D2D24]/10 text-[#2D2D24] border border-[#2D2D24]/20"
-                          }`}>
-                            {fusionResult.pathway}
-                          </span>
-                          <ChevronRight className={`h-4.5 w-4.5 text-[#8C8474] transition-transform duration-300 ${expandedFusionSection === "thesis" ? "rotate-90 text-[#7C8464]" : ""}`} />
-                        </div>
-                      </button>
-
-                      <AnimatePresence initial={false}>
-                        {expandedFusionSection === "thesis" && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-6 bg-white text-xs sm:text-sm text-[#434338] leading-relaxed flex flex-col gap-4">
-                              <p className="font-medium text-[#2D2D24] pb-2 border-b border-[#F2EDE4] flex items-center gap-1.5">
-                                <GitCompare className="h-4 w-4 text-[#7C8464]" />
-                                Structural Synthesis Pathway: {fusionResult.pathway}
-                              </p>
-                              <div>
-                                {renderSynthesizedTextWithBadges(fusionResult.thesis)}
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Unified Methodology / Blueprint Accordion */}
-                    <div className="border border-[#E8E4D9] rounded-2xl overflow-hidden bg-white shadow-3xs">
-                      <button
-                        onClick={() => setExpandedFusionSection(expandedFusionSection === "methodology" ? null : "methodology")}
-                        className="w-full px-5 py-4 flex justify-between items-center bg-[#FDFBF7] hover:bg-[#F9F7F2]/40 text-[#2D2D24] border-b border-[#E8E4D9] text-left transition-all"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-serif text-[#7C8464] font-black text-xs md:text-sm">03</span>
-                          <span className="font-serif font-bold text-sm md:text-base">Proposed Unified Methodology</span>
-                        </div>
-                        <ChevronRight className={`h-4.5 w-4.5 text-[#8C8474] transition-transform duration-300 ${expandedFusionSection === "methodology" ? "rotate-90 text-[#7C8464]" : ""}`} />
-                      </button>
-
-                      <AnimatePresence initial={false}>
-                        {expandedFusionSection === "methodology" && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-6 bg-white text-xs sm:text-sm text-[#434338] flex flex-col gap-6">
-                              
-                              {/* Unified Equation Card */}
-                              <div className="bg-[#F2EDE4]/60 border border-[#E8E4D9] p-4.5 rounded-xl font-mono text-center flex flex-col gap-2 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-1 px-2 bg-[#7C8464]/10 text-[#7C8464] border-l border-b border-[#E8E4D9] text-[9px] uppercase tracking-wider font-extrabold select-none">
-                                  Equation Blueprint
-                                </div>
-                                <div className="text-sm sm:text-base md:text-lg font-black tracking-wide text-[#2D2D24] py-2">
-                                  {fusionResult.methodology.formula}
-                                </div>
-                                <div className="text-[10px] text-[#8C8474] font-serif italic mt-1 font-medium">
-                                  Merged dynamic modeling variable framework
-                                </div>
-                              </div>
-
-                              <div className="leading-relaxed text-xs sm:text-sm text-[#434338]">
-                                {renderSynthesizedTextWithBadges(fusionResult.methodology.description)}
-                              </div>
-
-                              {/* Target Steps */}
-                              <div className="flex flex-col gap-3.5 mt-2">
-                                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#2D2D24] border-b border-[#F2EDE4] pb-1.5 flex items-center gap-1.5">
-                                  <Layers className="h-3.5 w-3.5 text-[#7C8464]" />
-                                  Implementation / Lab Verification Blueprint
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {fusionResult.methodology.architecture_steps.map((step: string, sIdx: number) => (
-                                    <div key={sIdx} className="bg-[#FDFBF7] border border-[#E8E4D9]/80 p-4 rounded-xl flex gap-3 items-start select-none">
-                                      <span className="font-mono text-xs font-bold text-[#7C8464] bg-[#7C8464]/10 h-6 w-6 min-w-[24px] rounded-full flex items-center justify-center">
-                                        {sIdx + 1}
-                                      </span>
-                                      <span className="text-xs text-[#5A5A4A] leading-relaxed font-serif">
-                                        {step}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Bounds & Targets Accordion */}
-                    <div className="border border-[#E8E4D9] rounded-2xl overflow-hidden bg-white shadow-3xs">
-                      <button
-                        onClick={() => setExpandedFusionSection(expandedFusionSection === "bounds" ? null : "bounds")}
-                        className="w-full px-5 py-4 flex justify-between items-center bg-[#FDFBF7] hover:bg-[#F9F7F2]/40 text-[#2D2D24] border-b border-[#E8E4D9] text-left transition-all"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-serif text-[#7C8464] font-black text-xs md:text-sm">04</span>
-                          <span className="font-serif font-bold text-sm md:text-base">Theoretical Bounds &amp; Exploits</span>
-                        </div>
-                        <ChevronRight className={`h-4.5 w-4.5 text-[#8C8474] transition-transform duration-300 ${expandedFusionSection === "bounds" ? "rotate-90 text-[#7C8464]" : ""}`} />
-                      </button>
-
-                      <AnimatePresence initial={false}>
-                        {expandedFusionSection === "bounds" && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-6 bg-white text-xs sm:text-sm text-[#434338] flex flex-col gap-6">
-                              
-                              <div className="leading-relaxed text-xs sm:text-sm text-[#434338]">
-                                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#2D2D24] mb-2.5 flex items-center gap-1.5">
-                                  <AlertCircle className="h-3.5 w-3.5 text-red-600" />
-                                  Boundary Stress Constants / Thermodynamic Limits
-                                </h4>
-                                <div className="p-4 bg-red-50/20 border border-red-100 rounded-xl font-serif text-[#434338] italic">
-                                  {renderSynthesizedTextWithBadges(fusionResult.bounds.constraints)}
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-                                <div>
-                                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#2D2D24] border-b border-[#F2EDE4] pb-1.5 mb-2.5">
-                                    System Boundary Limits (Agnostic Frictions)
-                                  </h4>
-                                  <ul className="list-disc list-inside text-xs text-[#5A5A4A] space-y-2 leading-relaxed">
-                                    {fusionResult.bounds.limitations.map((lim: string, lIdx: number) => (
-                                      <li key={lIdx}>{lim}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                <div>
-                                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#2D2D24] border-b border-[#F2EDE4] pb-1.5 mb-2.5">
-                                    Anticipated Lab Failure Mechanisms
-                                  </h4>
-                                  <ul className="list-disc list-inside text-xs text-[#5A5A4A] space-y-2 leading-relaxed font-mono">
-                                    {fusionResult.bounds.failure_modes.map((fail: string, fIdx: number) => (
-                                      <li key={fIdx}>{fail}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                  </div>
-
-                </motion.div>
-              )}
-
-            </div>
-
-            {/* Paper Selection Modal / Slide-over Drawer (Conditional inner view) */}
-            <AnimatePresence>
-              {selectingSlot && (
-                <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center p-4">
-                  {/* Backdrop */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setSelectingSlot(null)}
-                    className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-                  />
-
-                  {/* Picker Modal Content */}
-                  <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    className="relative bg-[#FDFBF7] border border-[#E8E4D9] rounded-[28px] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl z-10"
-                  >
-                    {/* Header */}
-                    <div className="px-6 py-5 border-b border-[#E8E4D9] bg-white flex justify-between items-center">
-                      <div>
-                        <h3 className="font-serif font-bold text-[#2D2D24] text-base">
-                          Select Paper for Slot {selectingSlot}
-                        </h3>
-                        <p className="text-[11px] text-[#8C8474]">
-                          Choose a vetted source to configure into the synthesis paradigm
-                        </p>
+                  {/* Right Compiler Console / Preview Screen */}
+                  <div className="lg:col-span-7 flex flex-col min-h-[400px] lg:min-h-0 bg-white border border-natural-border rounded-2xl shadow-xs overflow-hidden">
+                    <div className="px-6 py-4 border-b border-[#E8E4D9] bg-[#F9F7F2]/30 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-1.5 text-left">
+                        <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#5A5A4A]">Dossier Compiler Console</span>
                       </div>
-                      <button
-                        onClick={() => setSelectingSlot(null)}
-                        className="p-1.5 rounded-lg hover:bg-[#F2EDE4] text-[#8C8474]"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
 
-                    {/* Filter bar */}
-                    <div className="px-6 py-3.5 bg-[#F2EDE4]/30 border-b border-[#E8E4D9] flex items-center gap-2">
-                      <Search className="h-4 w-4 text-[#8C8474]" />
-                      <input
-                        type="text"
-                        placeholder="Search workspace publications search criteria..."
-                        value={fusionSearchQuery}
-                        onChange={(e) => setFusionSearchQuery(e.target.value)}
-                        className="flex-1 text-xs bg-transparent border-none outline-none focus:ring-0 text-[#2D2D24] placeholder-[#8C8474]/70"
-                      />
-                      {fusionSearchQuery && (
-                        <button onClick={() => setFusionSearchQuery("")} className="text-[10px] text-[#8C8474] hover:text-[#2D2D24] font-medium font-mono uppercase">
-                          Clear
-                        </button>
+                      {dossierResult && (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(dossierResult);
+                              setDossierCopied(true);
+                              setTimeout(() => setDossierCopied(false), 2000);
+                            }}
+                            className="text-[10px] bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[#5A5A4A] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            {dossierCopied ? <CheckCircle2 className="h-3 w-3 text-[#7C8464]" /> : <Share2 className="h-3 w-3" />}
+                            <span>{dossierCopied ? "Copied!" : "Copy"}</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              const printWindow = window.open("", "_blank");
+                              if (printWindow) {
+                                printWindow.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Lumina Study Dossier - ${dossierLevel}</title>
+                                      <style>
+                                        body { font-family: 'Georgia', serif; line-height: 1.6; padding: 40px; color: #1a1a1a; max-width: 800px; margin: 0 auto; }
+                                        h1 { border-bottom: 2px solid #5a4a3a; padding-bottom: 10px; color: #2d241d; font-size: 26px; }
+                                        h2 { color: #5a4a3a; font-size: 20px; border-left: 4px solid #5a4a3a; padding-left: 10px; margin-top: 30px; }
+                                        h3 { color: #2d2d24; font-size: 16px; margin-top: 20px; }
+                                        p { font-size: 14px; text-align: justify; }
+                                        ul, ol { font-size: 14px; margin-left: 20px; }
+                                        li { margin-bottom: 8px; }
+                                        .footer { margin-top: 50px; border-top: 1px dashed #ccc; padding-top: 15px; font-size: 10px; font-family: monospace; color: #777; }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <h1>Lumina Science Study Companion</h1>
+                                      <p><strong>Complexity Standard:</strong> ${dossierLevel} Academic Calibration Level</p>
+                                      <hr />
+                                      <div>${dossierResult.split('\n').map(l => l.trim() ? '<p>' + l.trim() + '</p>' : '<br />').join('')}</div>
+                                      <div class="footer">
+                                        Generated dynamically by Lumina Science Journal Companion. Powered by Gemini.
+                                      </div>
+                                    </body>
+                                  </html>
+                                `);
+                                printWindow.document.close();
+                                printWindow.print();
+                              }
+                            }}
+                            className="text-[10px] bg-amber-950 hover:bg-amber-900 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <Download className="h-3 w-3" />
+                            <span>Print Brief</span>
+                          </button>
+                        </div>
                       )}
                     </div>
 
-                    {/* Papers list */}
-                    <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-3">
-                      {(() => {
-                        const aggregate = [
-                          ...livePapers,
-                          ...FUSION_FALLBACK_PAPERS.filter(fallback => 
-                            !livePapers.some(lp => lp.title.toLowerCase() === fallback.title.toLowerCase())
-                          )
-                        ];
-
-                        const query = fusionSearchQuery.toLowerCase();
-                        const filtered = aggregate.filter(paper => 
-                          paper.title.toLowerCase().includes(query) ||
-                          paper.abstract.toLowerCase().includes(query) ||
-                          (paper.authors && paper.authors.toLowerCase().includes(query)) ||
-                          (paper.source_name && paper.source_name.toLowerCase().includes(query))
-                        );
-
-                        if (filtered.length === 0) {
-                          return (
-                            <div className="py-12 text-center text-xs text-[#8C8474] font-mono select-none">
-                              No matching scientific journals or preprints found
-                            </div>
-                          );
-                        }
-
-                        return filtered.map((paper, pIdx) => {
-                          const isSelectedOther = selectingSlot === "A" 
-                            ? fusionPaperB?.title === paper.title 
-                            : fusionPaperA?.title === paper.title;
-
-                          const isSelectedSelf = selectingSlot === "A"
-                            ? fusionPaperA?.title === paper.title
-                            : fusionPaperB?.title === paper.title;
-
-                          return (
-                            <div
-                              key={pIdx}
-                              onClick={() => {
-                                if (isSelectedOther) {
-                                  alert("This paper is already selected in the other slot! Please select distinct sources.");
-                                  return;
-                                }
-                                if (selectingSlot === "A") {
-                                  setFusionPaperA(paper);
-                                } else {
-                                  setFusionPaperB(paper);
-                                }
-                                setSelectingSlot(null);
-                                setFusionSearchQuery("");
-                              }}
-                              className={`p-4 rounded-xl border text-left flex flex-col gap-1.5 transition-all cursor-pointer ${
-                                isSelectedSelf
-                                  ? "bg-[#7C8464]/10 border-[#7C8464] pointer-events-none"
-                                  : isSelectedOther
-                                  ? "opacity-40 bg-gray-50 border-gray-200 cursor-not-allowed"
-                                  : "bg-white border-[#E8E4D9] hover:border-[#7C8464]/50 hover:bg-[#F2EDE4]/20"
-                              }`}
-                            >
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[9px] font-mono tracking-wide uppercase bg-[#5A5A4A] text-white px-1.5 py-0.5 rounded font-bold">
-                                  {paper.source_name}
-                                </span>
-                                <span className="text-[9px] font-mono text-[#8C8474] truncate max-w-[200px]">
-                                  by {paper.authors}
-                                </span>
-                                {isSelectedSelf && (
-                                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#7C8464] ml-auto">
-                                    Current Selection
-                                  </span>
-                                )}
-                              </div>
-                              <h4 className="font-serif font-bold text-xs sm:text-sm text-[#2D2D24] leading-snug">
-                                {paper.title}
-                              </h4>
-                              <p className="text-[10px] text-[#5A5A4A] line-clamp-2 leading-relaxed">
-                                {paper.abstract}
-                              </p>
-                            </div>
-                          );
-                        });
-                      })()}
+                    {/* Body screen */}
+                    <div className="flex-1 p-6 sm:p-8 overflow-y-auto text-left bg-slate-50/20">
+                      {generatingDossier ? (
+                        <div className="h-full flex flex-col items-center justify-center py-20 text-center gap-3">
+                          <RefreshCw className="h-8 w-8 text-amber-950 animate-spin" />
+                          <div className="max-w-md">
+                            <p className="font-serif font-black text-sm text-[#2D2D24] animate-pulse">COMPILING SYNTHESIS SYSTEM...</p>
+                            <p className="text-[11px] text-[#5A5A4A] mt-2 leading-relaxed italic bg-amber-50/40 p-3 rounded-xl border border-amber-200/50">
+                              "We are correlating concepts, structuring jargon dictionaries, translating formulas into active high-quality metaphorical descriptions, and drafting custom review prompts tailored for "${dossierLevel}" level."
+                            </p>
+                          </div>
+                        </div>
+                      ) : dossierError ? (
+                        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs text-center flex flex-col items-center gap-2">
+                          <span>⚠️ {dossierError}</span>
+                          <button onClick={handleCompileDossier} className="font-bold underline text-[10px]">Try compiling again</button>
+                        </div>
+                      ) : dossierResult ? (
+                        <div className="prose max-w-none text-left leading-relaxed">
+                          {renderMarkdownToJSX(dossierResult)}
+                        </div>
+                      ) : (
+                        <div className="h-full flex flex-col items-center justify-center py-16 text-center gap-4">
+                          <div className="bg-[#E8E4D9]/30 p-5 rounded-full text-[#8C8474]">
+                            <BookMarked className="h-8 w-8" />
+                          </div>
+                          <div className="max-w-xs">
+                            <p className="font-serif font-bold text-sm text-[#2D2D24]">Waiting for synthesis engine</p>
+                            <p className="text-xs text-[#5A5A4A] mt-2 leading-relaxed">
+                              Your custom study workspace lists <strong className="text-amber-950 font-bold">{readingList.length} articles</strong> queued. Click the <strong className="text-[#7C8464] font-bold">"Generate Custom Study Dossier"</strong> button on the left to invoke the synthesis engine and build an exportable study briefing companion!
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="px-6 py-4 border-t border-[#E8E4D9] bg-white flex justify-between items-center text-[10px] font-mono text-[#8C8474] font-medium select-none uppercase tracking-wider">
-                      <span>Selection Repository Engine</span>
-                      <span>{livePapers.length + FUSION_FALLBACK_PAPERS.length} total curated items</span>
+                    <div className="px-6 py-3 border-t border-[#E8E4D9] bg-slate-50 text-[9px] font-mono text-[#8C8474] font-medium uppercase tracking-wider select-none flex justify-between items-center">
+                      <span>Aggregation Pipeline Standard</span>
+                      <span>{dossierLevel} Integration Mode</span>
                     </div>
-
-                  </motion.div>
+                  </div>
                 </div>
-              )}
-            </AnimatePresence>
-
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAnalogy && (
-          <CrossDisciplinaryAnalogyPlayground onClose={() => setShowAnalogy(false)} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showInjector && (
-          <CrossDomainVariableInjector onClose={() => setShowInjector(false)} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showMathCompiler && (
-          <GenerativeMathCompiler onClose={() => setShowMathCompiler(false)} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showDialectical && (
-          <DialecticalSynthesisEngine onClose={() => setShowDialectical(false)} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showRosetta && (
-          <RosettaCanvas onClose={() => setShowRosetta(false)} />
-        )}
-      </AnimatePresence>
+              </div>
+            )}
+          </AnimatePresence>
+        );
+      })()}
 
       <AnimatePresence>
         {showAboutUs && (
           <AboutUs onClose={() => setShowAboutUs(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReviewChallenge && result && (
+          <ReviewerArena
+            paperTitle={result.simplified_title}
+            onClose={() => setShowReviewChallenge(false)}
+          />
         )}
       </AnimatePresence>
 
@@ -4305,8 +3221,6 @@ export default function App() {
             >
               • Learn More & About Us
             </button>
-            <span className="text-[#E8E4D9]">|</span>
-            <span className="font-mono text-[10px] text-[#8C8474]/80 hidden sm:inline">System Status: Active</span>
           </div>
         </div>
       </footer>

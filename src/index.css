@@ -5,69 +5,47 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Lora", Georgia, serif;
   --font-mono: "Fira Code", monospace;
-  --font-tech: "Share Tech Mono", monospace;
-  --font-science: "Oxanium", sans-serif;
+  --font-tech: "Space Grotesk", sans-serif;
+  --font-science: "Space Grotesk", sans-serif;
   --font-space: "Space Grotesk", sans-serif;
 
-  --color-natural-bg: #F9F7F2;
-  --color-natural-text: #434338;
-  --color-natural-title: #2D2D24;
-  --color-natural-primary: #7C8464;
-  --color-natural-primary-hover: #6A7153;
-  --color-natural-border: #E8E4D9;
-  --color-natural-card-bg: #F9F7F2;
-  --color-natural-highlight: #F2EDE4;
-  --color-natural-jargon-bg: #EAE6D6;
-  --color-natural-jargon-border: #D6D0C2;
+  --color-natural-bg: #FCFAF7;
+  --color-natural-text: #2B2A27;
+  --color-natural-title: #141312;
+  --color-natural-primary: #1F3025;
+  --color-natural-primary-hover: #16241B;
+  --color-natural-border: #E5E1D8;
+  --color-natural-card-bg: #FFFFFF;
+  --color-natural-highlight: #F5F1E9;
+  --color-natural-jargon-bg: #F4EFE6;
+  --color-natural-jargon-border: #DFD9CE;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--color-natural-bg);
   color: var(--color-natural-text);
-  background-image: 
-    radial-gradient(circle, rgba(124, 132, 100, 0.05) 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
 }
 
-/* Elegant Scientific Blueprint Graph Paper Class */
+/* Elegant Scientific Blueprint Graph Paper Class (Refactored to solid clean editorial background) */
 .blueprint-graph-paper {
-  background-color: #FDFDFB;
-  background-image: 
-    linear-gradient(to right, rgba(124, 132, 100, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(124, 132, 100, 0.04) 1px, transparent 1px),
-    linear-gradient(to right, rgba(124, 132, 100, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(124, 132, 100, 0.08) 1px, transparent 1px);
-  background-size: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+  background-color: #FFFFFF;
 }
 
-/* Authentic Engineering Blue/Teal Blueprint Theme Class */
+/* Authentic Engineering Blue/Teal Blueprint Theme Class (Refactored to solid deep green) */
 .cyber-blueprint-pattern {
-  background-color: #0c1c2a;
-  background-image: 
-    linear-gradient(to right, rgba(0, 196, 159, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 196, 159, 0.05) 1px, transparent 1px),
-    linear-gradient(to right, rgba(0, 196, 159, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 196, 159, 0.1) 1px, transparent 1px);
-  background-size: 8px 8px, 8px 8px, 40px 40px, 40px 40px;
+  background-color: #1F3025;
 }
 
-/* Notebook Binder Ring Pattern overlay */
+/* Notebook Binder Ring Pattern overlay (Removed) */
 .notebook-binder-border {
-  background-image: radial-gradient(circle, #D6D0C2 4px, transparent 4px);
-  background-size: 20px 20px;
+  background-image: none;
 }
 
-/* Symmetrical Tech Crosshair Marks */
+/* Symmetrical Tech Crosshair Marks (Removed) */
 .tech-crosshair::before,
 .tech-crosshair::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-color: rgba(124, 132, 100, 0.35);
-  border-style: solid;
-  pointer-events: none;
+  display: none !important;
 }
 
 @keyframes glowPulse {
@@ -87,4 +65,38 @@ body {
   animation: glowPulse 1.5s ease-in-out;
   transition: all 0.3s ease;
 }
+
+/* Custom Visual Primitives */
+.card-natural {
+  @apply bg-white rounded-[32px] p-7 border border-[#E8E4D9] shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.card-jargon {
+  @apply bg-[#EAE6D6] rounded-[32px] p-7 border border-[#D6D0C2] flex flex-col gap-5;
+}
+
+.btn-primary {
+  @apply bg-[#7C8464] hover:bg-[#6A7153] text-[10px] sm:text-xs font-bold text-white py-2.5 px-3 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1.5 border border-[#6A7153];
+}
+
+.btn-secondary {
+  @apply bg-[#F9F7F2] hover:bg-[#F2EDE4] border border-[#E8E4D9] text-xs font-bold text-[#5A5A4A] py-2 px-3.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5;
+}
+
+.btn-utility {
+  @apply bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24];
+}
+
+.badge-natural {
+  @apply inline-block text-[9px] bg-[#7C8464]/15 text-[#7C8464] border border-[#7C8464]/25 px-2 py-0.5 rounded-full font-mono uppercase font-black;
+}
+
+.badge-gold {
+  @apply inline-flex items-center gap-1 bg-[#D97706]/10 text-[#D97706] border border-[#D97706]/20 text-[10px] sm:text-[11px] font-mono font-bold px-2 py-0.5 rounded-md uppercase align-middle select-none;
+}
+
+.input-natural {
+  @apply w-full text-xs p-2.5 bg-white/60 border border-[#D6D0C2] rounded-xl focus:border-[#7C8464] focus:outline-none transition-all placeholder:text-[#8C8474]/70;
+}
+
 
