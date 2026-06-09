@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AboutUs from "./components/AboutUs";
 import SympheryIcon from "./components/SympheryIcon";
-import ReviewerArena from "./components/ReviewerArena";
-import CitationHorizonGraph from "./components/CitationHorizonGraph";
-import ThesisValidationMatrix, { generateThesisValidationMatrix as generateThesisValidationMatrixImported } from "./components/ThesisValidationMatrix";
+
 import JargonGlossary from "./components/JargonGlossary";
-import { FusionLab } from "./components/FusionLab";
 import { SynthesisDossier } from "./components/SynthesisDossier";
 import { SimplifiedPaper, JargonCheatSheetItem, ExplanationLevel, LivePaper, Source } from "./types";
 import { 
@@ -93,12 +90,7 @@ export default function App() {
   });
   const [showReadingList, setShowReadingList] = useState(false);
 
-  // Lumina Fusion: Dual Paper Synthesis Lab State
-  const [showFusionLab, setShowFusionLab] = useState(false);
-  const [fusionPaperA, setFusionPaperA] = useState<LivePaper | null>(null);
-  const [fusionPaperB, setFusionPaperB] = useState<LivePaper | null>(null);
   const [showAboutUs, setShowAboutUs] = useState(false);
-  const [showReviewChallenge, setShowReviewChallenge] = useState(false);
 
   // Sync readingList to localStorage
   useEffect(() => {
@@ -178,6 +170,7 @@ export default function App() {
 
   // Citation Graph & Horizon Map State
   const [showHorizonMap, setShowHorizonMap] = useState(false);
+  const [showReviewChallenge, setShowReviewChallenge] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<any | null>(null);
   const [selectedCitationNode, setSelectedCitationNode] = useState<any | null>(null);
 
@@ -186,177 +179,6 @@ export default function App() {
   const [isMatrixExpanded, setIsMatrixExpanded] = useState(true);
   const [splitScreenPaper, setSplitScreenPaper] = useState<any | null>(null);
   const [highDensity, setHighDensity] = useState(false);
-
-  // Dynamically generate Thesis Validation Matrix tailored to the active paper
-  const generateThesisValidationMatrix = (paperTitle: string, paperYear?: number) => {
-    const cleanTitle = paperTitle || "Current Study";
-    const activeYear = paperYear || result?.year || 2026;
-    const sup1Year = activeYear;
-    const sup2Year = Math.max(1995, activeYear - 1);
-    const con1Year = activeYear;
-    const con2Year = activeYear;
-    const met1Year = activeYear;
-    const met2Year = Math.max(1995, activeYear - 1);
-
-    let domain = "AI and ML Foundations";
-    if (cleanTitle.toLowerCase().includes("biolog") || cleanTitle.toLowerCase().includes("genet") || cleanTitle.toLowerCase().includes("protein") || cleanTitle.toLowerCase().includes("nutrient") || cleanTitle.toLowerCase().includes("crop")) {
-      domain = "Bioinformatics & Genetics";
-    } else if (cleanTitle.toLowerCase().includes("climate") || cleanTitle.toLowerCase().includes("carbon") || cleanTitle.toLowerCase().includes("ecolog") || cleanTitle.toLowerCase().includes("soil")) {
-      domain = "Environmental Sciences";
-    } else if (cleanTitle.toLowerCase().includes("quantum") || cleanTitle.toLowerCase().includes("physic") || cleanTitle.toLowerCase().includes("optics")) {
-      domain = "Quantum Mechanics & Physics";
-    }
-
-    const columns = {
-      supporting: [
-        {
-          id: "sup-1",
-          journal: "Journal of Computational Design Methods",
-          authors: `Chen & Zhang, ${sup1Year}`,
-          citations: 184,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Biological topologies are bound to structured optimization curves under scale."
-            : domain === "Environmental Sciences"
-            ? "Soil organic carbon decay coefficients remain steady under multi-decade monitoring."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Quantum register information retention matches mathematical models below 10mK."
-            : "Dynamic feedback scaling structures demonstrate stable gradient descent curves.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "💚 Verification: Independently verified that cellular alignment matches the scale structures outlined in this paper's core hypothesis."
-            : domain === "Environmental Sciences"
-            ? "💚 Replication: Successfully replicated the soil decay patterns across 4 diverse climate zones, proving the mathematical robustness of the model."
-            : domain === "Quantum Mechanics & Physics"
-            ? "💚 Verification: Confirmed state retention stays within 0.4% error bounds, replicating the main paper's claim of universal preservation."
-            : "💚 Verification: Replicated identical learning curves under high parameters, proving model stability claims in section 1 of the study.",
-          anchorId: "claim-big-idea",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological topologies scale structured optimization scale" : domain === "Environmental Sciences" ? "soil organic carbon decay coefficients monitoring" : domain === "Quantum Mechanics & Physics" ? "quantum register information retention mathematical models 10mK" : "dynamic feedback scaling gradient descent curves stable"),
-          abstract: "This work investigates computational stability models across simulated domains, validating the linear scaling dynamics and energy conservation parameters under peak stress loads.",
-          summary: "An independent replication study that confirms the core assertions with negligible error bounds."
-        },
-        {
-          id: "sup-2",
-          journal: "Global Science Publications & Archives",
-          authors: `S. Martinez, et al., ${sup2Year}`,
-          citations: 92,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Microsecond mitochondrial structural sequences show distinct clustering behaviors."
-            : domain === "Environmental Sciences"
-            ? "Deep learning simulations accurately predict methane pathway respiration rates."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Gradient descent optimization tracks spatial quantum filter metrics."
-            : "Feedback latency overhead is fully mitigated by lateral gradient offsets.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "💚 Verification: Proved sequence alignments cluster as described in the findings section, validating the primary analytical pipeline."
-            : domain === "Environmental Sciences"
-            ? "💚 Replication: Replicated path prediction accuracy with independent field readings, confirming the discoveries of the primary study."
-            : domain === "Quantum Mechanics & Physics"
-            ? "💚 Verification: Verified optimization metrics converge to stable regimes, backing up the core math presented in discoveries."
-            : "💚 Support: Direct hardware validation verifies that latency spikes are countered by lateral routing, yielding consistent 85%+ throughput.",
-          anchorId: "claim-discovery-0",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "mitochondrial structural sequences clustering" : domain === "Environmental Sciences" ? "deep learning predict methane pathways respiration" : domain === "Quantum Mechanics & Physics" ? "gradient descent optimization spatial quantum filters" : "feedback latency lateral gradient offsets throughput"),
-          abstract: "We implement dynamic scaling on dedicated servers and discover that localized feedback pathways offset connection overhead substantially.",
-          summary: "Verifies the findings under live hardware conditions, presenting empirical metrics supporting the main paper's claims."
-        }
-      ],
-      conflicting: [
-        {
-          id: "con-1",
-          journal: "Advanced Computational Review",
-          authors: `L. Zhao & J. Sterling, ${con1Year}`,
-          citations: 114,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Biological topologies collapse into volatile regimes when parameters scale non-linearly."
-            : domain === "Environmental Sciences"
-            ? "Regional organic carbon sequestration decreases sharply under rapid temperature anomalies."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Extreme multi-gate coherence degrades fast under subtle external electric noise fields."
-            : "Delayed gradient feedback causes gradient explosions when training state steps vary.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "⚠️ Contradiction: Discovered significant topologic variation that challenges the linear stabilization claim of the main paper."
-            : domain === "Environmental Sciences"
-            ? "⚠️ Contradiction: Observed sequestration failure margins that contradict the main paper's claim of universal carbon retention."
-            : domain === "Quantum Mechanics & Physics"
-            ? "⚠️ Spike: Found state decoherence rate spiked by 24% under ambient field deviations, disputing the study's claims of universal noise immunity."
-            : "⚠️ Friction: The active error rate spiked by 14% when tested against non-linear delayed opponents, contradicting claims of universal stabilization.",
-          anchorId: "claim-discovery-1",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological topologies collapse non-linear parameters" : domain === "Environmental Sciences" ? "organic carbon sequestration temperature anomalies" : domain === "Quantum Mechanics & Physics" ? "multi-gate quantum coherence electric noise fields" : "delayed gradient feedback gradient explosion"),
-          abstract: "An exploration of degradation boundaries under extreme volatile conditions. We find that feedback loops cause structural divergence when input bounds surpass nominal standards.",
-          summary: "Identifies severe operational boundaries and disputes the universal stability of the primary study's model."
-        },
-        {
-          id: "con-2",
-          journal: "The Dialectical Science Gazette",
-          authors: `K. Vance, ${con2Year}`,
-          citations: 56,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Biological sequencing approaches struggle to map long sequences containing recursive patterns."
-            : domain === "Environmental Sciences"
-            ? "Direct field measurements of soil carbon respiration show high variance compared to simulated runs."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Quantum signal updates trigger communications overhead that delays state-gradient execution."
-            : "Physical hardware interconnect latency nullifies speedups described in simulated models.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "⚠️ Counter-argument: Argues that recursive sequences degrade accuracy, questioning the main paper's universal claim of absolute fidelity."
-            : domain === "Environmental Sciences"
-            ? "⚠️ Critique: Challenges the simulation's validity, pointing out that natural variances exceed the paper's claimed confidence boundaries by 2.5x."
-            : domain === "Quantum Mechanics & Physics"
-            ? "⚠️ Friction: Demonstrates interconnect bottlenecks that offset alignment speedups, contradicting theoretical multi-gate performance stats."
-            : "⚠️ Critique: Challenges the theoretical modeling of feedback layers, noting communication bottlenecks during distributed scale-up operations.",
-          anchorId: "claim-discovery-2",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "biological sequencing map recursive patterns" : domain === "Environmental Sciences" ? "soil carbon respiration natural variance" : domain === "Quantum Mechanics & Physics" ? "quantum signal updates communications latency overhead" : "hardware interconnect latency simulation speedups bottlenecks"),
-          abstract: "We benchmark distributed layer coordination across real physical server racks, identifying critical spatial communication bottlenecks.",
-          summary: "A hardware-centric critique highlighting that idealized simulations overlook tangible latency boundaries."
-        }
-      ],
-      methodological: [
-        {
-          id: "met-1",
-          journal: "Journal of Theoretical Physics & Modeling",
-          authors: `Feynman Group Research, ${met1Year}`,
-          citations: 210,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Simulating cell membrane topologies using stochastic Monte Carlo algorithms."
-            : domain === "Environmental Sciences"
-            ? "Simulating crop carbon exchange utilizing stochastic localized weather grids."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Simulating multi-gate quantum pathways using parallel stochastic Monte Carlo."
-            : "Mapping gradient descents via stochastic simulated annealing grids.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "🌐 Variation: Replaced the sequence assembly models with stochastic Monte Carlo, finding similar topologic alignments but lower CPU overhead."
-            : domain === "Environmental Sciences"
-            ? "🌐 Variation: Relied on weather grids instead of Neural Estimations. Sequestration readings stayed within 1.2% of the main paper's output."
-            : "🌐 Variation: Substituted backpropagation with simulated annealing. While memory overhead dropped 30%, resolution margins stayed within 1% of this study.",
-          anchorId: "claim-big-idea",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "cell membrane topologies stochastic Monte Carlo algorithm" : domain === "Environmental Sciences" ? "crop carbon exchange stochastic localized weather grids" : domain === "Quantum Mechanics & Physics" ? "simulating multi-gate quantum pathways parallel stochastic Monte Carlo" : "gradient descent stochastic simulated annealing"),
-          abstract: "This paper introduces alternative algorithmic paths to model high-dimensional parameters, showing that localized search regions deliver comparable fidelity metrics for standard domains.",
-          summary: "Confirms the primary study's model conclusions using an entirely independent mathematical methodology."
-        },
-        {
-          id: "met-2",
-          journal: "Bio-Computing Benchmarks",
-          authors: `Okada & Sato, ${met2Year}`,
-          citations: 67,
-          claim: domain === "Bioinformatics & Genetics"
-            ? "Comparing protein structures in dry lab conditions on customizable TPU hardware."
-            : domain === "Environmental Sciences"
-            ? "Conducting soil moisture and carbon respirations in climate chambers."
-            : domain === "Quantum Mechanics & Physics"
-            ? "Benchmarking register retention rates on physical cryogenic FPGAs."
-            : "Running hyper-parameter search models on offline edge FPGA systems.",
-          convergence: domain === "Bioinformatics & Genetics"
-            ? "🌐 Variation: Conducted mapping on low-power TPU chips rather than standard cloud nodes, validating comparable structure matching boundaries."
-            : domain === "Environmental Sciences"
-            ? "🌐 Variation: Tested findings inside physical climate chambers. Empirical results match the algorithmic prediction model with high fidelity."
-            : "🌐 Variation: Evaluated hardware in cryo-chambers, confirming mathematical retention stability parameters under extreme cooling limits.",
-          anchorId: "claim-discovery-0",
-          originalUrl: "https://scholar.google.com/scholar?q=" + encodeURIComponent(domain === "Bioinformatics & Genetics" ? "protein structures dry lab TPU hardware" : domain === "Environmental Sciences" ? "soil moisture carbon respiration climate chambers" : domain === "Quantum Mechanics & Physics" ? "cryogenic fpga superconducting register retention" : "hyper-parameter search edge fpga"),
-          abstract: "An evaluation of custom high-density silicon architectures. We benchmark parameter matching and state mapping behaviors under localized constraints.",
-          summary: "Provides an alternative hardware benchmark supporting the scalability of the primary paper's findings."
-        }
-      ]
-    };
-    return columns;
-  };
 
   const handleLoadNodeAsMain = async (node: any) => {
     setShowHorizonMap(false);
@@ -372,56 +194,8 @@ export default function App() {
     await handleSelectLivePaper(paperToLoad);
   };
 
-  // Loading phase message state
-  const [loadingPhase, setLoadingPhase] = useState(0);
-
-  const getLoadingMessages = () => {
-    switch (explanationLevel) {
-      case "Middle School":
-        return [
-          "Cracking open the scientific secret code...",
-          "Sweeping away hard-to-read textbook jargon...",
-          "Dreaming up awesome playground analogies...",
-          "Summing up big findings into fun bullet points...",
-          "Connecting this breakthrough to cool real-life facts..."
-        ];
-      case "Undergrad":
-        return [
-          "Deconstructing academic literature structure...",
-          "Isolating domain-specific jargon terms...",
-          "Synthesizing high-level mechanistic principles...",
-          "Compiling methodology insights & key findings...",
-          "Mapping potential research & real-world applications..."
-        ];
-      case "Graduate":
-        return [
-          "Evaluating experimental design & methodology...",
-          "Contextualizing technical terminology metrics...",
-          "Formulating functional structural explanations...",
-          "Analyzing data validity & research findings...",
-          "Assessing theoretical boundaries & industrial utility..."
-        ];
-      case "PhD":
-        return [
-          "Conducting peer examination & rigorous analysis...",
-          "Vetting kinetic constraints & mathematical models...",
-          "Evaluating post-doctoral & theoretical assumptions...",
-          "Auditing experimental robustness & novel findings...",
-          "Scrutinizing paradigm integration & future pathways..."
-        ];
-      case "High School":
-      default:
-        return [
-          "Analyzing critical science frameworks...",
-          "Scrubbing complex molecular-level jargon...",
-          "Drafting fun, memorable high school analogies...",
-          "Summarizing key discoveries into digestible bullet points...",
-          "Structuring deep future impact scenarios..."
-        ];
-    }
-  };
-
-  const loadingMessages = getLoadingMessages();
+  // Loading phase message state (simplified for academic integrity)
+  const loadingMessages = ["Processing..."];
 
   // Helper to group live papers by topic and sort each group's papers by publish_date (newest first)
   const getGroupedAndSortedPapers = () => {
@@ -489,15 +263,6 @@ export default function App() {
     return Math.max(1, Math.ceil(words / 200)); // Average academic/reading speed ~200 WPM
   };
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (loading) {
-      interval = setInterval(() => {
-        setLoadingPhase((prev) => (prev + 1) % loadingMessages.length);
-      }, 2500);
-    }
-    return () => clearInterval(interval);
-  }, [loading, loadingMessages.length]);
 
   // Fetch live papers and sources on initial application load
   useEffect(() => {
@@ -607,7 +372,6 @@ export default function App() {
     setLoading(true);
     setError(null);
     setResult(null);
-    setLoadingPhase(0);
 
     try {
       const response = await fetch("/api/simplify", {
@@ -884,7 +648,7 @@ export default function App() {
   const renderBackButtonAndHorizonMapTrigger = () => {
     if (!result) return null;
     return (
-      <div className="flex items-center justify-between py-1">
+      <div className="flex items-center justify-between py-1 gap-2">
         <button
           onClick={() => {
             setResult(null);
@@ -892,20 +656,31 @@ export default function App() {
             setAbstract("");
             setFullText("");
           }}
-          className="group flex items-center gap-2 text-xs font-bold text-[#7C8464] hover:text-[#6A7153] transition-colors bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer"
+          className="group flex items-center gap-2 text-xs font-bold text-[#7C8464] hover:text-[#6A7153] transition-colors bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer whitespace-nowrap"
         >
           <span className="inline-block transition-transform duration-200 group-hover:-translate-x-0.5">&larr;</span>
           <span>Back to Feed</span>
         </button>
 
-        <button
-          onClick={() => setShowHorizonMap(true)}
-          className="group flex items-center gap-2 text-xs font-bold text-[#2D2D24] hover:text-white hover:bg-[#7C8464] transition-all bg-white border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer hover:border-[#7C8464]"
-          id="horizon-map-top-trigger"
-        >
-          <Network className="h-4 w-4 text-[#7C8464] group-hover:text-white transition-colors animate-pulse" />
-          <span>Explore Horizon Map</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setShowHorizonMap(true)}
+            className="group flex items-center gap-2 text-xs font-bold text-[#2D2D24] hover:text-white hover:bg-[#7C8464] transition-all bg-white border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer hover:border-[#7C8464] whitespace-nowrap"
+            id="horizon-map-top-trigger"
+          >
+            <Network className="h-4 w-4 text-[#7C8464] group-hover:text-white transition-colors animate-pulse" />
+            <span>Explore Horizon Map</span>
+          </button>
+
+          <button
+            onClick={() => setShowReviewChallenge(true)}
+            className="group flex items-center gap-2 text-xs font-bold text-white bg-[#BC5234] hover:bg-[#9B4127] transition-all px-4.5 py-2.5 rounded-full shadow-md cursor-pointer whitespace-nowrap"
+            id="reviewer-arena-top-trigger"
+          >
+            <ShieldAlert className="h-4 w-4 text-white animate-bounce" />
+            <span>Reviewer #3 Arena</span>
+          </button>
+        </div>
       </div>
     );
   };
@@ -991,6 +766,7 @@ export default function App() {
       </motion.div>
     );
   };
+
 
   const renderBigIdeaDescription = () => {
     if (!result) return null;
@@ -1085,9 +861,20 @@ export default function App() {
           <h4 className="text-xl font-serif font-bold text-[#2D2D24] mb-1">
             Grounded RAG Proofs
           </h4>
-          <p className="text-xs text-[#8C8474] font-mono leading-relaxed">
+          <p className="text-xs text-[#8C8474] font-mono leading-relaxed mb-3">
             Every simplified key statement below is directly linked to raw PDF context pages with character-accurate verbatim quoting.
           </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono border-t border-b border-[#F2EDE4] py-2 mb-2">
+            <div className="flex items-center gap-1.5 text-emerald-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-600" />
+              <span><strong>Emerald Style:</strong> Verbatim Verified Page Lookups</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-amber-800">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span><strong>Amber Style:</strong> Fuzzy / Synthesized Theoretical Layouts</span>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
@@ -1096,10 +883,32 @@ export default function App() {
               key={idx} 
               className="p-4 bg-[#F9F7F2] rounded-2xl border border-[#E8E4D9] flex flex-col gap-2.5 hover:border-[#7C8464]/30 transition-all duration-300"
             >
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-[10px] font-bold text-[#7C8464] bg-[#7C8464]/10 border border-[#7C8464]/20 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
-                  Page {f.source_page}
-                </span>
+              <div className="flex justify-between items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold text-[#7C8464] bg-[#7C8464]/10 border border-[#7C8464]/20 px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider">
+                    Claimed: Page {f.source_page}
+                  </span>
+                  
+                  {/* Real-time automated academic integrity validation badges */}
+                  {f.is_verified !== undefined && (
+                    f.is_verified ? (
+                      f.verification_method === "exact" ? (
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-mono flex items-center gap-1 select-none">
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600 animate-pulse" /> Verbatim Verified {f.matched_page !== f.source_page ? `(On Page ${f.matched_page})` : ""}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-full font-mono flex items-center gap-1 select-none">
+                          <CheckCircle2 className="h-3 w-3 text-amber-600" /> Fuzzy Match Verified ({f.verification_ratio}%)
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full font-mono flex items-center gap-1 select-none animate-pulse">
+                        <AlertTriangle className="h-3 w-3 text-red-500" /> Untracked Quote
+                      </span>
+                    )
+                  )}
+                </div>
+                
                 <span className="text-[9px] text-[#8C8474] font-mono uppercase tracking-wider leading-none">
                   Citation ID: [P-{f.source_page}-{idx+1}]
                 </span>
@@ -1164,18 +973,6 @@ export default function App() {
     );
   };
 
-  const renderThesisValidationMatrix = () => {
-    if (!result) return null;
-    return (
-      <ThesisValidationMatrix
-        simplifiedTitle={result.simplified_title}
-        year={result.year}
-        splitScreenPaper={splitScreenPaper}
-        setSplitScreenPaper={setSplitScreenPaper}
-        setHoveredMatrixCard={setHoveredMatrixCard}
-      />
-    );
-  };
 
   const renderJargonGlossary = () => {
     if (!result) return null;
@@ -1188,46 +985,7 @@ export default function App() {
     );
   };
 
-  const renderReviewerArenaBanner = () => {
-    if (!result) return null;
-    return (
-      <div className="bg-white border border-amber-900/20 rounded-[32px] p-6 sm:p-7 shadow-2xs flex flex-col md:flex-row justify-between items-center gap-5 relative overflow-hidden">
-        {/* Amber aesthetic light accent */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/5 rounded-full pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-amber-500/5 rounded-full pointer-events-none" />
 
-        <div className="flex items-start gap-4">
-          <div className="bg-amber-950 text-amber-400 p-3 h-11 w-11 rounded-2xl flex items-center justify-center flex-shrink-0 animate-pulse">
-            <ShieldAlert className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-900 bg-amber-500/10 px-2 py-0.5 rounded">
-                Interactive Curriculum Challenge
-              </span>
-              <span className="text-[9px] font-mono text-[#8C8474]">
-                Gamified Arena
-              </span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-serif font-black text-natural-title mt-1.5">
-              Reviewer #3 Arena: Stress-Test claims!
-            </h3>
-            <p className="text-xs text-natural-text leading-relaxed mt-1 max-w-xl">
-              Don't just read passively. Step into the arena to adjust core mathematical parameters (latency, thermal heat, and electromagnetic fields) via interactive sliders, exposing model collapse boundaries!
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => setShowReviewChallenge(true)}
-          className="w-full md:w-auto flex-shrink-0 bg-amber-950 hover:bg-amber-900 text-[#F9F7F2] font-black py-3 px-6 rounded-xl text-xs tracking-wide transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer border border-amber-950"
-        >
-          <Sliders className="h-4 w-4 text-amber-400" />
-          <span>START REVIEW CHALLENGE</span>
-        </button>
-      </div>
-    );
-  };
 
   const renderActionsActionBar = () => {
     if (!result) return null;
@@ -1240,13 +998,6 @@ export default function App() {
           >
             <BookMarked className="h-3.5 w-3.5" />
             Save to Study Log
-          </button>
-          <button 
-            onClick={() => setShowReviewChallenge(true)}
-            className="px-5 py-2.5 bg-amber-950 hover:bg-amber-900 border border-amber-950 text-[#F9F7F2] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-            Review Challenge
           </button>
           <button 
             onClick={() => alert("Link copied to clipboard! Share with your biology class study group.")}
@@ -1292,20 +1043,16 @@ export default function App() {
         <div className="flex items-center flex-wrap gap-3 justify-center sm:justify-end">
           {/* Lumina Fusion Toggle Button */}
           <button
-            onClick={() => setShowFusionLab(true)}
+
             className={`text-xs px-4 py-2 rounded-lg border font-bold flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
-              showFusionLab
+              false
+
                 ? "bg-natural-primary text-white border-natural-primary"
                 : "bg-white border-natural-border text-natural-text hover:bg-natural-highlight hover:text-natural-primary"
             }`}
           >
             <Sparkles className="h-3.5 w-3.5 text-natural-primary" />
             <span>Fusion Lab</span>
-            {(fusionPaperA || fusionPaperB) && (
-              <span className="inline-flex items-center justify-center text-[10px] h-5 min-w-[20px] px-1.5 rounded-full font-mono font-bold bg-natural-primary text-white">
-                {(fusionPaperA ? 1 : 0) + (fusionPaperB ? 1 : 0)}
-              </span>
-            )}
           </button>
 
           {/* Reading List Toggle Button */}
@@ -1781,14 +1528,6 @@ export default function App() {
 
                                       <button
                                         onClick={() => {
-                                          if (!fusionPaperA) {
-                                            setFusionPaperA(paper);
-                                          } else if (!fusionPaperB) {
-                                            setFusionPaperB(paper);
-                                          } else {
-                                            setFusionPaperA(paper);
-                                          }
-                                          setShowFusionLab(true);
                                         }}
                                         className="text-center text-[11px] bg-[#E8E4D9]/60 hover:bg-[#E8E4D9] text-[#2D2D24] px-3.5 py-2.5 rounded-xl font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs whitespace-nowrap"
                                       >
@@ -1849,7 +1588,7 @@ export default function App() {
                     </div>
 
                     <p className="text-natural-text italic text-sm max-w-sm mt-3 font-serif">
-                      &ldquo;{loadingMessages[loadingPhase]}&rdquo;
+                      &ldquo;{loadingMessages[0]}&rdquo;
                     </p>
                   </div>
                 </motion.div>
@@ -1914,11 +1653,11 @@ export default function App() {
                             {renderCatchySimplifiedTitle()}
                             {renderExcitingHookSection()}
                             {renderActionsActionBar()}
-                            {renderReviewerArenaBanner()}
                           </div>
 
                           {/* Middle Column: The Core Text & Deep Details */}
                           <div className={splitScreenPaper ? "flex flex-col gap-3" : "lg:col-span-5 flex flex-col gap-3"}>
+
                             {renderBigIdeaGrid()}
                             {renderRealWorldImpact()}
                             {renderGroundedEvidence()}
@@ -1926,7 +1665,7 @@ export default function App() {
 
                           {/* Right Column: Jargon & Discovered Exploits */}
                           <div className={splitScreenPaper ? "col-span-1 md:col-span-2 flex flex-col gap-3" : "lg:col-span-4 flex flex-col gap-3"}>
-                            {renderThesisValidationMatrix()}
+
                             {renderJargonGlossary()}
                           </div>
                         </div>
@@ -1934,30 +1673,8 @@ export default function App() {
                     ) : (
                       <div className={`flex flex-col gap-6 w-full ${splitScreenPaper ? "lg:col-span-7" : ""}`}>
                   
-                  {/* Back to Feed button & Horizon Map Trigger */}
-                  <div className="flex items-center justify-between py-1">
-                    <button
-                      onClick={() => {
-                        setResult(null);
-                        setTitle("");
-                        setAbstract("");
-                        setFullText("");
-                      }}
-                      className="group flex items-center gap-2 text-xs font-bold text-[#7C8464] hover:text-[#6A7153] transition-colors bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer"
-                    >
-                      <span className="inline-block transition-transform duration-200 group-hover:-translate-x-0.5">&larr;</span>
-                      <span>Back to Article Feed</span>
-                    </button>
-
-                    <button
-                      onClick={() => setShowHorizonMap(true)}
-                      className="group flex items-center gap-2 text-xs font-bold text-[#2D2D24] hover:text-white hover:bg-[#7C8464] transition-all bg-white border border-[#E8E4D9] px-4.5 py-2.5 rounded-full shadow-sm cursor-pointer hover:border-[#7C8464]"
-                      id="horizon-map-top-trigger"
-                    >
-                      <Network className="h-4 w-4 text-[#7C8464] group-hover:text-white transition-colors animate-pulse" />
-                      <span>Explore Horizon Map</span>
-                    </button>
-                  </div>
+                   {/* Back to Feed button & Horizon Map Trigger */}
+                   {renderBackButtonAndHorizonMapTrigger()}
 
                 
                   
@@ -2035,10 +1752,7 @@ export default function App() {
                     </div>
                   </motion.div>
 
-                  {/* Reviewer #3 Interactive Challenge Banner */}
-                  <div className="my-6">
-                    {renderReviewerArenaBanner()}
-                  </div>
+
 
                   {/* Big Idea Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
@@ -2115,7 +1829,9 @@ export default function App() {
                   {renderGroundedEvidence()}
 
                   {/* Thesis Validation & Dialectics Matrix */}
-                  <div className="bg-white rounded-[32px] p-7 border border-[#E8E4D9] shadow-sm flex flex-col gap-5">
+
+                  {false && (
+                    <div className="bg-white rounded-[32px] p-7 border border-[#E8E4D9] shadow-sm flex flex-col gap-5">
                     <div className="flex items-center justify-between border-b border-[#F2EDE4] pb-4">
                       <div className="flex items-center gap-3">
                         <div className="bg-[#7C8464]/10 p-2.5 rounded-xl text-[#7C8464]">
@@ -2158,242 +1874,11 @@ export default function App() {
                           transition={{ duration: 0.3 }}
                           className="overflow-hidden"
                         >
-                          {/* Main 3 Column Grid */}
-                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-                            {(() => {
-                              const matrix = generateThesisValidationMatrix(result.simplified_title, result.year);
-                              
-                              return (
-                                <>
-                                  {/* Column 1: Supporting Evidence & Replications */}
-                                  <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 px-1 py-1 bg-[#7C8464]/5 border border-[#7C8464]/15 rounded-xl">
-                                      
-                                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#7C8464]">
-                                        Support &amp; Replications
-                                      </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3.5">
-                                      {matrix.supporting.map((card) => {
-                                        const isCardActive = splitScreenPaper?.id === card.id;
-                                        return (
-                                          <div
-                                            key={card.id}
-                                            onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                            onMouseLeave={() => setHoveredMatrixCard(null)}
-                                            className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                              isCardActive 
-                                                ? "bg-[#7C8464]/10 border-[#7C8464] ring-1 ring-[#7C8464]/20" 
-                                                : "border-[#E8E4D9] hover:border-[#7C8464] hover:bg-white"
-                                            }`}
-                                          >
-                                            {/* Micro Border Indicator */}
-                                            <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-[#7C8464]" />
-                                            
-                                            {/* High Density Metadata Header */}
-                                            <div className="flex justify-between items-center gap-2 pl-1">
-                                              <span className="text-[10px] font-mono font-bold text-[#7C8464] bg-[#7C8464]/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                                {card.journal}
-                                              </span>
-                                              <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                                ★ Citations: <strong>{card.citations}</strong>
-                                              </span>
-                                            </div>
-
-                                            <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                              By {card.authors}
-                                            </p>
-
-                                            <div className="pl-1">
-                                              <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                                {card.claim}
-                                              </h4>
-                                              <p className="text-[11px] text-[#5A5A4A] leading-relaxed mt-2 p-2 rounded-lg bg-[#7C8464]/5 border border-[#7C8464]/10 italic font-medium">
-                                                {card.convergence}
-                                              </p>
-                                            </div>
-
-                                            {/* Split Button Action Layout */}
-                                            <div className="flex gap-1.5 mt-2 pl-1">
-                                              <button
-                                                onClick={() => setSplitScreenPaper(card)}
-                                                className="flex-1 bg-[#7C8464] hover:bg-[#6A7153] text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                              >
-                                                <GitCompare className="h-3 w-3" />
-                                                <span>Split-Screen Mode</span>
-                                              </button>
-                                              <a
-                                                href={card.originalUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                              >
-                                                <span>Source</span>
-                                                <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                              </a>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  {/* Column 2: Conflicting Results, Critiques & Counter-arguments */}
-                                  <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 px-1 py-1 bg-amber-500/5 border border-amber-500/15 rounded-xl">
-                                     
-                                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700">
-                                        Critiques &amp; Friction
-                                      </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3.5">
-                                      {matrix.conflicting.map((card) => {
-                                        const isCardActive = splitScreenPaper?.id === card.id;
-                                        return (
-                                          <div
-                                            key={card.id}
-                                            onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                            onMouseLeave={() => setHoveredMatrixCard(null)}
-                                            className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                              isCardActive 
-                                                ? "bg-amber-50 border-amber-500 ring-1 ring-amber-500/20" 
-                                                : "border-[#E8E4D9] hover:border-amber-600/40 hover:bg-white"
-                                            }`}
-                                          >
-                                            {/* Micro Border Indicator */}
-                                            <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-amber-600" />
-                                            
-                                            {/* High Density Metadata Header */}
-                                            <div className="flex justify-between items-center gap-2 pl-1">
-                                              <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-600/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                                {card.journal}
-                                              </span>
-                                              <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                                ★ Citations: <strong>{card.citations}</strong>
-                                              </span>
-                                            </div>
-
-                                            <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                              By {card.authors}
-                                            </p>
-
-                                            <div className="pl-1">
-                                              <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                                {card.claim}
-                                              </h4>
-                                              <p className="text-[11px] text-amber-900 leading-relaxed mt-2 p-2 rounded-lg bg-amber-600/5 border border-amber-600/10 italic font-medium">
-                                                {card.convergence}
-                                              </p>
-                                            </div>
-
-                                            {/* Split Button Action Layout */}
-                                            <div className="flex gap-1.5 mt-2 pl-1">
-                                              <button
-                                                onClick={() => setSplitScreenPaper(card)}
-                                                className="flex-1 bg-amber-600 hover:bg-amber-700 text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                              >
-                                                <GitCompare className="h-3 w-3" />
-                                                <span>Split-Screen Mode</span>
-                                              </button>
-                                              <a
-                                                href={card.originalUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                              >
-                                                <span>Source</span>
-                                                <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                              </a>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  {/* Column 3: Methodological Variations & Benchmarks */}
-                                  <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 px-1 py-1 bg-slate-500/5 border border-slate-500/15 rounded-xl">
-                                
-                                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-700">
-                                        Method Variations
-                                      </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3.5">
-                                      {matrix.methodological.map((card) => {
-                                        const isCardActive = splitScreenPaper?.id === card.id;
-                                        return (
-                                          <div
-                                            key={card.id}
-                                            onMouseEnter={() => setHoveredMatrixCard(card.anchorId)}
-                                            onMouseLeave={() => setHoveredMatrixCard(null)}
-                                            className={`group relative bg-[#F9F7F2]/40 rounded-2xl p-4.5 border transition-all duration-300 flex flex-col gap-3 shadow-xs hover:shadow-md ${
-                                              isCardActive 
-                                                ? "bg-slate-50 border-slate-500 ring-1 ring-slate-500/20" 
-                                                : "border-[#E8E4D9] hover:border-slate-500/40 hover:bg-white"
-                                            }`}
-                                          >
-                                            {/* Micro Border Indicator */}
-                                            <div className="absolute left-0 top-6 bottom-6 w-1 rounded-r-lg bg-slate-500" />
-                                            
-                                            {/* High Density Metadata Header */}
-                                            <div className="flex justify-between items-center gap-2 pl-1">
-                                              <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-500/10 px-2 py-0.5 rounded truncate max-w-[200px]">
-                                                {card.journal}
-                                              </span>
-                                              <span className="text-[9px] font-mono text-[#8C8474] flex-shrink-0">
-                                                ★ Citations: <strong>{card.citations}</strong>
-                                              </span>
-                                            </div>
-
-                                            <p className="text-[10px] text-[#8C8474] font-mono pl-1">
-                                              By {card.authors}
-                                            </p>
-
-                                            <div className="pl-1">
-                                              <h4 className="text-xs font-bold font-serif text-[#2D2D24] leading-snug">
-                                                {card.claim}
-                                              </h4>
-                                              <p className="text-[11px] text-slate-950 leading-relaxed mt-2 p-2 rounded-lg bg-slate-500/5 border border-slate-500/10 italic font-medium">
-                                                {card.convergence}
-                                              </p>
-                                            </div>
-
-                                            {/* Split Button Action Layout */}
-                                            <div className="flex gap-1.5 mt-2 pl-1">
-                                              <button
-                                                onClick={() => setSplitScreenPaper(card)}
-                                                className="flex-1 bg-slate-500 hover:bg-slate-600 text-[10px] font-bold text-white py-2 px-2.5 rounded-lg transition-all text-center cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1"
-                                              >
-                                                <GitCompare className="h-3 w-3" />
-                                                <span>Split-Screen Mode</span>
-                                              </button>
-                                              <a
-                                                href={card.originalUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="bg-white hover:bg-[#F2EDE4] border border-[#E8E4D9] text-[10px] font-bold text-[#5A5A4A] py-2 px-2.5 text-center rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:text-[#2D2D24]"
-                                              >
-                                                <span>Source</span>
-                                                <ExternalLink className="h-2.5 w-2.5 text-[#8C8474]" />
-                                              </a>
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                </>
-                              );
-                            })()}
-                          </div>
-                        </motion.div>
+                                               </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
+                  )}
 
                   {/* Jargon Glossary Cheat Sheet */}
                   <div className="bg-[#EAE6D6] rounded-[32px] p-7 border border-[#D6D0C2] flex flex-col gap-5">
@@ -2463,13 +1948,6 @@ export default function App() {
                       >
                         <BookMarked className="h-3.5 w-3.5" />
                         Save to Study Log
-                      </button>
-                      <button 
-                        onClick={() => setShowReviewChallenge(true)}
-                        className="px-5 py-2.5 bg-amber-950 hover:bg-amber-900 border border-amber-950 text-[#F9F7F2] rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
-                        Review Challenge
                       </button>
                       <button 
                         onClick={() => alert("Link copied to clipboard!.")}
@@ -2651,20 +2129,6 @@ export default function App() {
         
       </main>
 
-      {/* Dynamic D3 Citation Horizon & Paradigm Mapping Component */}
-      <AnimatePresence>
-        {showHorizonMap && result && (
-          <CitationHorizonGraph
-            activePaper={result}
-            onClose={() => setShowHorizonMap(false)}
-            onLoadAsMainArticle={async (paperCandidate) => {
-              setShowHorizonMap(false);
-              await handleSelectLivePaper(paperCandidate);
-            }}
-            explanationLevel={explanationLevel}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Reading List Slide-over Drawer Panel */}
       <AnimatePresence>
@@ -2839,16 +2303,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Lumina Fusion Synthesis Lab Fullscreen Overlay */}
-      <FusionLab
-        showFusionLab={showFusionLab}
-        setShowFusionLab={setShowFusionLab}
-        fusionPaperA={fusionPaperA}
-        setFusionPaperA={setFusionPaperA}
-        fusionPaperB={fusionPaperB}
-        setFusionPaperB={setFusionPaperB}
-        livePapers={livePapers}
-      />
 
       {/* Lumina Custom Science Compiler / Dossier Sheet Overlay */}
       <SynthesisDossier
@@ -3196,14 +2650,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showReviewChallenge && result && (
-          <ReviewerArena
-            paperTitle={result.simplified_title}
-            onClose={() => setShowReviewChallenge(false)}
-          />
-        )}
-      </AnimatePresence>
+
 
       {/* Symmetrical Minimalist Footer */}
       <footer className="py-6 mt-16 border-t border-[#E8E4D9] bg-white text-xs text-[#8C8474]">

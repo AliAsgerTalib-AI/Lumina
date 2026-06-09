@@ -3,13 +3,49 @@ import path from "path";
 import fs from "fs";
 import * as geminiService from "./geminiService";
 import { parseXmlFeed } from "./feedParser";
-import { generateDynamicCitationNetwork } from "./citationNetwork";
-import { RSS_FEED_MAP, REAL_LITERATURE_FALLBACKS } from "./fallbacks";
+
+const RSS_FEED_MAP: Record<string, string> = {
+  "https://arxiv.org": "https://export.arxiv.org/rss/physics",
+  "https://www.biorxiv.org": "https://connect.biorxiv.org/biorxiv_xml.php?subject=biol",
+  "https://www.medrxiv.org": "https://connect.medrxiv.org/medrxiv_xml.php?subject=med",
+  "https://www.quantamagazine.org/": "https://www.quantamagazine.org/feed/",
+  "https://www.quantamagazine.org": "https://www.quantamagazine.org/feed/",
+  "https://quantum-journal.org": "https://quantum-journal.org/feed/",
+  "https://www.nature.com/npjqi/": "https://www.nature.com/npjqi/current_issue.rss",
+};
+const REAL_LITERATURE_FALLBACKS: any[] = [
+  {
+    title: "On the Electrodynamics of Moving Bodies",
+    authors: "Albert Einstein",
+    abstract: "A seminal paper establishing the foundation of special relativity.",
+    source_name: "Annalen der Physik",
+    original_url: "https://doi.org/10.1002/andp.19053221004",
+    topic: "Physics",
+    publish_date: "1905-09-26"
+  },
+  {
+    title: "Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid",
+    authors: "J. D. Watson and F. H. C. Crick",
+    abstract: "The discovery of the double helix structure of DNA.",
+    source_name: "Nature",
+    original_url: "https://doi.org/10.1038/171737a0",
+    topic: "Biology",
+    publish_date: "1953-04-25"
+  }
+];
+import { getFreshLiteratureFallbacks } from "./openAlexService";
 import { parseAcademicPDF, simplifyWithGrounding } from "./grounding";
 
 const cleanHtmlLayout = preprocessScientificHtml;
 
 export const routesRouter = Router();
+
+// Robust memory cache for /latest-papers (15 minutes TTL) to bypass rate limitations gracefully
+let latestPapersCache: {
+  papers: any[];
+  timestamp: number;
+} | null = null;
+const CACHE_DURATION_MS = 15 * 60 * 1000;
 
 // Simplify endpoint
 routesRouter.post("/simplify", async (req, res) => {
@@ -110,6 +146,45 @@ routesRouter.post("/debate-spar", async (req, res) => {
   }
 });
 
+// Dynamic Thesis Validation Matrix Endpoint
+routesRouter.post("/thesis-matrix", async (req, res) => {
+  const { title, abstract, year, mode } = req.body;
+  try {
+    if (!title || !abstract) {
+      res.status(400).json({ error: "Title and Abstract are required for mapping." });
+      return;
+    }
+
+    let result = null;
+    if (mode === "real") {
+      result = await geminiService.generateRealThesisMatrix({ title, abstract, year });
+      if (result) {
+        // Tag result mode for the frontend to acknowledge
+        (result as any).mode = "real";
+      }
+    }
+
+    if (!result) {
+      result = await geminiService.generateDynamicThesisMatrix({ title, abstract, year });
+      if (result) {
+        (result as any).mode = "simulated";
+      }
+    }
+
+    if (!result) {
+      res.status(500).json({ error: "Failed to generate thesis matrix." });
+      return;
+    }
+    res.json(result);
+  } catch (error: any) {
+    console.error("[Lumina System] Thesis matrix generation failed:", error);
+    res.status(502).json({
+      error: "Matrix generation failed due to an upstream model error.",
+      details: error.message || error,
+    });
+  }
+});
+
 // Real-time Web Crawler & Parsing Endpoint with Secure Network Fetch Safety
 routesRouter.post("/fetch-paper", async (req, res) => {
   const { url } = req.body;
@@ -162,6 +237,14 @@ routesRouter.post("/fetch-paper", async (req, res) => {
 // Endpoint to fetch real, active papers from the registry XML sources
 routesRouter.get("/latest-papers", async (req, res) => {
   try {
+    // 1. Check memory cache first to avoid Gemini 429 quota restrictions
+    const forceRefresh = req.query.refresh === "true";
+    if (!forceRefresh && latestPapersCache && (Date.now() - latestPapersCache.timestamp < CACHE_DURATION_MS)) {
+      console.log("[Lumina System] Serving latest-papers from active memory cache.");
+      res.json({ papers: latestPapersCache.papers });
+      return;
+    }
+
     const filePath = path.join(process.cwd(), "research_sources.txt");
     if (!fs.existsSync(filePath)) {
       res.json({ papers: [] });
@@ -192,8 +275,9 @@ routesRouter.get("/latest-papers", async (req, res) => {
       .map(src => {
         const cleanedUrl = src.url.endsWith("/") ? src.url.slice(0, -1) : src.url;
         let feedUrl = RSS_FEED_MAP[src.url] || RSS_FEED_MAP[cleanedUrl] || RSS_FEED_MAP[src.url + "/"];
+        // If no feedUrl found, set it to null to skip this source.
         if (!feedUrl) {
-          feedUrl = src.url;
+          feedUrl = "";
         }
         return { name: src.name, url: src.url, feedUrl };
       })
@@ -201,7 +285,7 @@ routesRouter.get("/latest-papers", async (req, res) => {
 
     const fetchPromises = activeFetches.map(async (src) => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       try {
         const fetchRes = await fetch(src.feedUrl, {
           signal: controller.signal,
@@ -231,8 +315,16 @@ routesRouter.get("/latest-papers", async (req, res) => {
     const successfulFeeds = fetchResults.filter(f => f.success && f.content.length > 0);
 
     if (successfulFeeds.length === 0) {
-      console.log("No feeds successfully fetched. Returning high-fidelity real literature fallbacks.");
-      const shuffledFallbacks = [...REAL_LITERATURE_FALLBACKS];
+      console.log("No feeds successfully fetched. Returning high-fidelity real literature fallbacks from OpenAlex.");
+      let shuffledFallbacks = [];
+      try {
+        shuffledFallbacks = await getFreshLiteratureFallbacks();
+        if (!shuffledFallbacks || shuffledFallbacks.length === 0) {
+          shuffledFallbacks = [...REAL_LITERATURE_FALLBACKS];
+        }
+      } catch (err) {
+        shuffledFallbacks = [...REAL_LITERATURE_FALLBACKS];
+      }
       for (let i = shuffledFallbacks.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = shuffledFallbacks[i];
@@ -266,8 +358,13 @@ routesRouter.get("/latest-papers", async (req, res) => {
         console.log(`Local RSS parser extracted ${parsedFeedsList.length} real papers!`);
         papersResult = parsedFeedsList.slice(0, 15);
       } else {
-        console.log("No papers found via local RSS parsing. Using fallback list.");
-        const rawFallbacks = [...REAL_LITERATURE_FALLBACKS];
+        console.log("No papers found via local RSS parsing. Using dynamic OpenAlex fallback list.");
+        let rawFallbacks = [];
+        try {
+          rawFallbacks = await getFreshLiteratureFallbacks();
+        } catch (err) {
+          rawFallbacks = [...REAL_LITERATURE_FALLBACKS];
+        }
         for (let i = rawFallbacks.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           const temp = rawFallbacks[i];
@@ -276,6 +373,14 @@ routesRouter.get("/latest-papers", async (req, res) => {
         }
         papersResult = rawFallbacks;
       }
+    }
+
+    // Cache the result for subsequent calls as long as we got back some papers
+    if (papersResult && papersResult.length > 0) {
+      latestPapersCache = {
+        papers: papersResult,
+        timestamp: Date.now()
+      };
     }
 
     res.json({ papers: papersResult });
@@ -356,32 +461,9 @@ routesRouter.post("/compile-dossier", async (req, res) => {
   }
 });
 
-// Citation Horizon Tracing with Google Search
+// Citation Horizon Tracing endpoint removed due to academic integrity concerns.
 routesRouter.post("/citation-network", async (req, res) => {
-  const { title, abstract = "", level = "Graduate", year } = req.body;
-  const targetYear = year ? Number(year) : 2026;
-  try {
-    if (!title || !title.trim()) {
-      res.status(400).json({ error: "Paper title is required to generate its citation pedigree." });
-      return;
-    }
-
-    console.log(`Generating 2-Level Deep Citation Tree for paper: "${title}" published in ${targetYear} at ${level} level`);
-    const parsedData = await geminiService.traceCitationNetwork(title, abstract, level, targetYear);
-    res.json(parsedData);
-  } catch (error: any) {
-    console.log("[Lumina System] Activating custom horizontal citation horizon mapping.");
-    try {
-      const dynamicNetwork = generateDynamicCitationNetwork(title, abstract, targetYear);
-      res.json(dynamicNetwork);
-    } catch (fallbackErr: any) {
-      console.error("Deep offline fallback for citation network failed:", fallbackErr);
-      res.status(502).json({
-        error: "Citation network generation failed.",
-        details: error.message || error,
-      });
-    }
-  }
+  res.status(404).json({ error: "Endpoint decommissioned." });
 });
 
 /**

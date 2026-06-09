@@ -89,7 +89,7 @@ export default function AboutUs({ onClose }: AboutUsProps) {
               Intellectual Scaffold
             </h3>
             <p className="text-xs text-[#5A5A4A] leading-relaxed">
-              By combining AI-driven structural abstractions, peer review evaluations, and Ginzburg-Landau mathematical unification algorithms, we create clean visual frameworks. Software developers and researchers can now discover non-obvious parallels between natural systems and web architecture.
+              By combining AI-driver structural abstractions, rigorous literature gap analysis, and interactive peer review scenarios, we create clean visual frameworks. Software developers and researchers can now discover objective, non-obvious conceptual parallels and structural comparisons between natural systems and computational architectures.
             </p>
           </div>
 

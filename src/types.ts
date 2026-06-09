@@ -3,6 +3,8 @@ export type ExplanationLevel = "Middle School" | "High School" | "Undergrad" | "
 export interface JargonCheatSheetItem {
   term: string;
   simple_definition: string;
+  source_page?: number;
+  context_sentence?: string;
 }
 
 export interface GroundedFinding {
@@ -31,6 +33,7 @@ export interface SimplifiedPaper {
   original_url?: string;
   original_title?: string;
   findings?: GroundedFinding[];
+  stress_test_variables?: any[];
 }
 
 export interface SamplePaper {

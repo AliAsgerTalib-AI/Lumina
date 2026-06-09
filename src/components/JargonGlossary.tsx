@@ -68,6 +68,21 @@ export default function JargonGlossary({
                 <p className={`italic text-xs sm:text-sm leading-relaxed p-2.5 rounded-xl transition-all duration-300 ${isPulsing ? "text-[#2D2D24] bg-white/70" : "text-[#5A5A4A] bg-white/40"}`}>
                   "{item.simple_definition}"
                 </p>
+                {item.context_sentence && (
+                  <div className="mt-1 pt-1.5 border-t border-[#E8E4D9]/40 flex flex-col gap-1.5">
+                    <span className="text-[10px] font-bold tracking-wider uppercase text-[#BC5234] flex items-center gap-1.5">
+                      <span>Original Context</span>
+                      {item.source_page && (
+                        <span className="px-1.5 py-0.5 rounded bg-[#BC5234]/15 text-[#BC5234] font-mono text-[9px] lowercase font-bold">
+                          page {item.source_page}
+                        </span>
+                      )}
+                    </span>
+                    <p className="text-[11px] text-[#5A5A4A]/90 font-serif leading-relaxed italic bg-white/25 rounded-lg p-2.5 border border-[#E8E4D9]/30">
+                      "...{item.context_sentence}..."
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })

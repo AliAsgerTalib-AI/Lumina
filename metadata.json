@@ -1,6 +1,6 @@
 {
   "name": "Lumina",
-  "description": "A",
+  "description": "An academic verification, research translation, and interactive stress-testing engine.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
